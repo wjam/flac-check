@@ -1,0 +1,34 @@
+# Correct lyrics which contain some probably copyright tracking characters
+--coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1 --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "instrumental": false,
+  "plainLyrics": "tеxtﾠwith dodgy characters but these are okay: ♪ ♫ ♬ — –"
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" path=artist1/album1 track=track1.flac
+level=WARN msg="Updated track" tags.UNSYNCEDLYRICS="text with dodgy characters but these are okay: ♪ ♫ ♬ — –" path=artist1/album1 track=track1.flac

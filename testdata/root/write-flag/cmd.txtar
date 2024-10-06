@@ -1,0 +1,94 @@
+# Write flag means update the files
+--coverart-baseurl __COVERART_BASEURL__ --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug . --write
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- artist1/album2/track1.flac --
+{
+  "tags": {
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ALBUM": ["album2"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "MUSICBRAINZ_ALBUMID": ["releaseID2"]
+  }
+}
+-- GET __COVERART_BASEURL__/releaseID2 --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "images": [
+    {
+      "approved": true,
+      "back": true,
+      "front": false,
+      "image": "__IMGSERVER_BASEURL__/notused.png",
+      "thumbnails": {
+        "small": "__IMGSERVER_BASEURL__/notused.jpeg",
+        "large": "__IMGSERVER_BASEURL__/notused.png"
+      }
+    },
+    {
+      "approved": true,
+      "back": false,
+      "front": true,
+      "image": "__IMGSERVER_BASEURL__/notused.png",
+      "thumbnails": {
+        "small": "__IMGSERVER_BASEURL__/notused.jpeg",
+        "large": "__IMGSERVER_BASEURL__/album2.png"
+      }
+    }
+  ]
+}
+-- GET __MUSICBRAINZ__/release/releaseID2 --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "releaseID2"
+}
+-- GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1 --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "instrumental": false,
+  "plainLyrics": "something",
+  "syncedLyrics": "something synced"
+}
+-- GET __IMGSERVER_BASEURL__/album2.png --
+HTTP/1.1 200 OK
+Content-Type: image/png
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" path=artist1/album1 track=track1.flac
+level=WARN msg="Saving changes to track" tags.LYRICS="something synced" path=artist1/album1 track=track1.flac
+level=DEBUG msg="Processing album" path=artist1/album2
+level=DEBUG msg="GET __MUSICBRAINZ__/release/releaseID2" path=artist1/album2 track=track1.flac
+level=DEBUG msg="GET __COVERART_BASEURL__/releaseID2" path=artist1/album2 track=track1.flac
+level=DEBUG msg="GET __IMGSERVER_BASEURL__/album2.png" path=artist1/album2 track=track1.flac
+level=WARN msg="Saving changes to track" picture.url=__IMGSERVER_BASEURL__/album2.png picture.mime=image/png picture.height=1 picture.width=1 path=artist1/album2 track=track1.flac
