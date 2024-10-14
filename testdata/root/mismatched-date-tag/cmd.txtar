@@ -1,0 +1,47 @@
+# All tracks in an album should have the same DATE tag
+--coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["2"],
+    "DATE": ["2024-01-01"],
+    "LYRICS": [""]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- artist1/album1/track2.flac --
+{
+  "tags": {
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track2"],
+    "TRACKNUMBER": ["2"],
+    "TRACKTOTAL": ["2"],
+    "DATE": ["2024"],
+    "LYRICS": [""]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+Error: album artist1/album1: expected single value for "DATE", got 2024,2024-01-01

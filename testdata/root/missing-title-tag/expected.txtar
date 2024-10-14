@@ -1,0 +1,11 @@
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "ARTISTSORT": ["artist1"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"]
+  }
+}
