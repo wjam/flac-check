@@ -9,11 +9,11 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/wjam/music_check/internal/coverart"
-	"github.com/wjam/music_check/internal/log"
-	"github.com/wjam/music_check/internal/lrclib"
-	"github.com/wjam/music_check/internal/music"
-	"github.com/wjam/music_check/internal/musicbrainz"
+	"github.com/wjam/flac-check/internal/coverart"
+	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/lrclib"
+	"github.com/wjam/flac-check/internal/music"
+	"github.com/wjam/flac-check/internal/musicbrainz"
 )
 
 func main() {

@@ -3,9 +3,9 @@ package music
 import (
 	"slices"
 
-	"github.com/wjam/music_check/internal/errors"
-	"github.com/wjam/music_check/internal/music/track"
-	"github.com/wjam/music_check/internal/util"
+	"github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/music/track"
+	"github.com/wjam/flac-check/internal/util"
 )
 
 type album []*track.Track

@@ -22,8 +22,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/wjam/music_check/internal/errors"
-	"github.com/wjam/music_check/internal/util"
+	"github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/util"
 	"golang.org/x/tools/txtar"
 )
 

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/wjam/music_check/internal/log"
+	"github.com/wjam/flac-check/internal/log"
 )
 
 type Client struct {

@@ -9,11 +9,11 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/sourcegraph/conc/pool"
-	"github.com/wjam/music_check/internal/coverart"
-	"github.com/wjam/music_check/internal/lrclib"
-	"github.com/wjam/music_check/internal/music/track"
-	"github.com/wjam/music_check/internal/musicbrainz"
-	"github.com/wjam/music_check/internal/util"
+	"github.com/wjam/flac-check/internal/coverart"
+	"github.com/wjam/flac-check/internal/lrclib"
+	"github.com/wjam/flac-check/internal/music/track"
+	"github.com/wjam/flac-check/internal/musicbrainz"
+	"github.com/wjam/flac-check/internal/util"
 )
 
 type ScanOptions struct {

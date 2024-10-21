@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/spf13/pflag"
 )
@@ -19,21 +18,9 @@ func (l *logLevelFlag) String() string {
 }
 
 func (l *logLevelFlag) Set(s string) error {
-	levels := map[string]slog.Level{
-		"warn":  slog.LevelWarn,
-		"info":  slog.LevelInfo,
-		"debug": slog.LevelDebug,
-	}
-
-	level, ok := levels[strings.ToLower(s)]
-	if !ok {
-		return fmt.Errorf("unknown log level: %q", s)
-	}
-
-	l.level = level
-	return nil
+	return l.level.UnmarshalText([]byte(s))
 }
 
 func (l *logLevelFlag) Type() string {
-	return "log-level"
+	return fmt.Sprintf("%s|%s|%s|%s", slog.LevelDebug, slog.LevelInfo, slog.LevelWarn, slog.LevelError)
 }

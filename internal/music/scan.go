@@ -8,9 +8,9 @@ import (
 	"log/slog"
 	"slices"
 
-	interrors "github.com/wjam/music_check/internal/errors"
-	"github.com/wjam/music_check/internal/log"
-	"github.com/wjam/music_check/internal/music/track"
+	interrors "github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/music/track"
 )
 
 func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry) error {
@@ -120,12 +120,7 @@ func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
 	}
 
 	if lyrics == nil || lyrics.Instrumental {
-		log.Logger(ctx).InfoContext(ctx, "No lyrics found")
-		return nil
-	}
-
-	if lyrics.Instrumental {
-		log.Logger(ctx).InfoContext(ctx, "No lyrics for instrumental track")
+		log.Logger(ctx).DebugContext(ctx, "No lyrics found")
 		return nil
 	}
 

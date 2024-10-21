@@ -25,10 +25,10 @@ Content-Type: application/json
 
 {
   "instrumental": false,
-  "plainLyrics": "tеxtﾠwith dodgy characters but these are okay: ♪ ♫ ♬ — –"
+  "plainLyrics": "tеxtﾠwith dodgy character’s but these are okay: ♪ ♫ ♬ — –"
 }
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
 level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" path=artist1/album1 track=track1.flac
-level=WARN msg="Updated track" tags.UNSYNCEDLYRICS="text with dodgy characters but these are okay: ♪ ♫ ♬ — –" path=artist1/album1 track=track1.flac
+level=WARN msg="Updated track" tags.UNSYNCEDLYRICS="text with dodgy character’s but these are okay: ♪ ♫ ♬ — –" path=artist1/album1 track=track1.flac

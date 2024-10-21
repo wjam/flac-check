@@ -15,9 +15,9 @@ import (
 	"github.com/go-flac/flacpicture/v2"
 	"github.com/go-flac/flacvorbis/v2"
 	"github.com/go-flac/go-flac/v2"
-	errors2 "github.com/wjam/music_check/internal/errors"
-	"github.com/wjam/music_check/internal/log"
-	"github.com/wjam/music_check/internal/util"
+	errors2 "github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/util"
 )
 
 func NewTrack(path string) (*Track, error) {
@@ -321,6 +321,7 @@ var emojis = map[rune]struct{}{
 	'♬': {},
 	'—': {},
 	'–': {},
+	'’': {},
 }
 
 func notEnglishOrEmojiCharacters(r rune) bool {

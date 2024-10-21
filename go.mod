@@ -1,4 +1,4 @@
-module github.com/wjam/music_check
+module github.com/wjam/flac-check
 
 go 1.23
 
