@@ -1,8 +1,9 @@
 # Write flag means update the files
---coverart-baseurl __COVERART_BASEURL__ --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug . --write
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl __COVERART_BASEURL__ --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug . --write
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "ALBUM": ["album1"],
@@ -22,6 +23,7 @@
 -- artist1/album2/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID2"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],
@@ -61,12 +63,15 @@ Content-Type: application/json
     }
   ]
 }
--- GET __MUSICBRAINZ__/release/releaseID2 --
+-- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups --
 HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "id": "releaseID2"
+  "id": "releaseID2",
+  "cover-art-archive": {
+    "count": 1
+  }
 }
 -- GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1 --
 HTTP/1.1 200 OK
@@ -85,10 +90,10 @@ iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAA
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" status=200 path=artist1/album1 track=track1.flac
 level=WARN msg="Saving changes to track" tags.LYRICS="something synced" path=artist1/album1 track=track1.flac
 level=DEBUG msg="Processing album" path=artist1/album2
-level=DEBUG msg="GET __MUSICBRAINZ__/release/releaseID2" path=artist1/album2 track=track1.flac
-level=DEBUG msg="GET __COVERART_BASEURL__/releaseID2" path=artist1/album2 track=track1.flac
-level=DEBUG msg="GET __IMGSERVER_BASEURL__/album2.png" path=artist1/album2 track=track1.flac
+level=DEBUG msg="GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups" status=200 path=artist1/album2 track=track1.flac
+level=DEBUG msg="GET __COVERART_BASEURL__/releaseID2" status=200 path=artist1/album2 track=track1.flac
+level=DEBUG msg="GET __IMGSERVER_BASEURL__/album2.png" status=200 path=artist1/album2 track=track1.flac
 level=WARN msg="Saving changes to track" picture.url=__IMGSERVER_BASEURL__/album2.png picture.mime=image/png picture.height=1 picture.width=1 path=artist1/album2 track=track1.flac

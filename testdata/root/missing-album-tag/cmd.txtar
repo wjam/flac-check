@@ -1,8 +1,9 @@
 # All tracks should have an ALBUM tag
---coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTISTSORT": ["artist1"],
     "ARTIST": ["artist1"],
     "TITLE": ["track1"],

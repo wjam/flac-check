@@ -3,10 +3,9 @@ package coverart
 import (
 	"bytes"
 	"context"
-	"net/http"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/cache"
 )
 
 type Client struct {
@@ -19,28 +18,36 @@ func New(opts ...requests.Config) *Client {
 	return &Client{
 		configs: append([]requests.Config{
 			func(rb *requests.Builder) {
-				rb.BaseURL(BaseURL).
-					Transport(requests.LogTransport(
-						&http.Transport{
-							MaxConnsPerHost: 2,
-						},
-						log.HTTP,
-					))
+				rb.BaseURL(BaseURL)
 			},
+			cache.TransportCache(),
 		}, opts...),
 	}
 }
 
-func (c Client) GetCoverArtFromMusicBrainzReleaseID(ctx context.Context, releaseID string) (CoverArts, error) {
-	var images CoverArts
+func (c Client) GetCoverArtFromMusicBrainzReleaseID(ctx context.Context, releaseID string) (string, error) {
+	var images coverArts
 	if err := requests.New(c.configs...).
 		Pathf("./%s", releaseID).
 		ToJSON(&images).
 		Fetch(ctx); err != nil {
-		return CoverArts{}, err
+		return "", err
 	}
 
-	return images, nil
+	for _, img := range images.Images {
+		if !img.Front || !img.Approved {
+			continue
+		}
+
+		url := img.Image
+		if v, ok := img.Thumbnails["large"]; ok {
+			url = v
+		}
+
+		return url, nil
+	}
+
+	return "", nil
 }
 
 func (c Client) FetchImage(ctx context.Context, url string) ([]byte, error) {
@@ -53,7 +60,7 @@ func (c Client) FetchImage(ctx context.Context, url string) ([]byte, error) {
 	return img.Bytes(), nil
 }
 
-type CoverArts struct {
+type coverArts struct {
 	Images []struct {
 		Approved   bool              `json:"approved"`
 		Back       bool              `json:"back"`

@@ -140,7 +140,9 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-picture-and-musicbrainz-tag",
 			expectedErrs: []error{
-				errors.ErrNoTagForPicture,
+				errors.ErrNotSingleTagValue{
+					Tag: "MUSICBRAINZ_ALBUMID",
+				},
 			},
 		},
 		{name: "king-size-slim"},
@@ -148,6 +150,8 @@ func TestRoot(t *testing.T) {
 		{name: "international-lyrics-for-international-artist"},
 		{name: "funky-lyric-chars-dropped"},
 		{name: "default-log-level"},
+		{name: "musicbrainz-release-id-from-disc-id"},
+		{name: "picture-from-wikipedia"},
 	}
 
 	for _, test := range tests {

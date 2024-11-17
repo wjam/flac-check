@@ -1,8 +1,9 @@
 # Drop lyrics when the artist isn't an international one but the returned lyrics aren't english
---coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "ALBUM": ["album1"],
@@ -30,5 +31,5 @@ Content-Type: application/json
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" status=200 path=artist1/album1 track=track1.flac
 level=INFO msg="Skipped lyrics as it wasn't english" unknown=기도루만아온일종지직하한 lyrics="아직도 하루 온종일 지루하기 만한" path=artist1/album1 track=track1.flac

@@ -1,6 +1,7 @@
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["something synced"],
@@ -21,6 +22,7 @@
 -- artist1/album2/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID2"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],

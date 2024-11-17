@@ -1,8 +1,9 @@
 # No write flag means don't update the files
---coverart-baseurl __COVERART_BASEURL__ --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration .
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl __COVERART_BASEURL__ --lrclib-baseurl __LRCLIB_BASEURL__ --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration .
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "ALBUM": ["album1"],
@@ -22,6 +23,7 @@
 -- artist1/album2/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID2"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],
@@ -63,12 +65,15 @@ Content-Type: application/json
     }
   ]
 }
--- GET __MUSICBRAINZ__/release/releaseID2 --
+-- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups --
 HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-  "id": "releaseID2"
+  "id": "releaseID2",
+  "cover-art-archive": {
+    "count": 1
+  }
 }
 -- GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1 --
 HTTP/1.1 200 OK
