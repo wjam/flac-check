@@ -14,6 +14,8 @@ import (
 	"github.com/wjam/flac-check/internal/music/track"
 	"github.com/wjam/flac-check/internal/musicbrainz"
 	"github.com/wjam/flac-check/internal/util"
+	"github.com/wjam/flac-check/internal/wikidata"
+	"github.com/wjam/flac-check/internal/wikipedia"
 )
 
 type ScanOptions struct {
@@ -21,9 +23,12 @@ type ScanOptions struct {
 	InternationalArtists []string
 	Parallelism          uint16
 
+	FetchLyrics        bool
 	CoverartBaseUrl    string
 	LrclibBaseUrl      string
 	MusicbrainzBaseUrl string
+	WikipediaBaseUrl   string
+	WikidataBaseUrl    string
 }
 
 func (s ScanOptions) artClient() *coverart.Client {
@@ -44,21 +49,38 @@ func (s ScanOptions) musicBrainzClient() *musicbrainz.Client {
 	})
 }
 
+func (s ScanOptions) wikipediaClient(brainz *musicbrainz.Client, data *wikidata.Client) *wikipedia.Client {
+	return wikipedia.New(brainz, data, func(rb *requests.Builder) {
+		rb.BaseURL(s.WikipediaBaseUrl)
+	})
+}
+func (s ScanOptions) wikidataClient() *wikidata.Client {
+	return wikidata.New(func(rb *requests.Builder) {
+		rb.BaseURL(s.WikidataBaseUrl)
+	})
+}
+
 type Scan struct {
 	path   string
 	opts   ScanOptions
 	art    *coverart.Client
 	lyrics *lrclib.Client
 	music  *musicbrainz.Client
+	wiki   *wikipedia.Client
+	data   *wikidata.Client
 }
 
 func NewScan(path string, opts ScanOptions) *Scan {
+	brainz := opts.musicBrainzClient()
+	data := opts.wikidataClient()
 	return &Scan{
 		path:   path,
 		opts:   opts,
 		art:    opts.artClient(),
 		lyrics: opts.lrcLibClient(),
-		music:  opts.musicBrainzClient(),
+		music:  brainz,
+		wiki:   opts.wikipediaClient(brainz, data),
+		data:   data,
 	}
 }
 

@@ -9,9 +9,10 @@ import (
 	"time"
 )
 
-func HTTP(req *http.Request, _ *http.Response, err error, duration time.Duration) {
+func HTTP(req *http.Request, res *http.Response, err error, duration time.Duration) {
 	attrs := []any{
 		slog.Duration("duration", duration),
+		slog.Int("status", res.StatusCode),
 	}
 	if err != nil {
 		attrs = append(attrs, slog.String("error", err.Error()))

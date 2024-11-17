@@ -1,0 +1,162 @@
+# Write flag means update the files
+--wikidata-baseurl __WIKIDATA__ --wikipedia-baseurl __WIKIPEDIA__ --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["RELEASE1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"]
+  }
+}
+-- GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "RELEASE1",
+  "cover-art-archive": {
+    "count": 0
+  },
+  "release-group": {
+    "id": "GROUP1"
+  }
+}
+-- GET __MUSICBRAINZ__/release-group/GROUP1?inc=url-rels%2Bannotation --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "relations": [
+    {
+      "url": {
+        "resource": "http://unused.localhost:1234"
+      },
+      "type": "spotify"
+    },
+    {
+      "url": {
+        "resource": "__WIKIDATA__/wiki/DATA1"
+      },
+      "type": "wikidata"
+    }
+  ]
+}
+-- GET __WIKIDATA__/DATA1?_fields=sitelinks --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "sitelinks": {
+    "enwiki": {
+      "title": "TITLE"
+    }
+  }
+}
+-- GET __WIKIPEDIA__/?action=query&format=json&formatversion=2&generator=images&piprop=original&prop=pageimages%7Ccategories&titles=TITLE --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "query": {
+    "pages": [
+      {
+        "title": "File:Star full.svg",
+        "original": {
+          "source": "http://unused.localhost:1234",
+          "width": 108,
+          "height": 110
+        }
+      },
+      {
+        "title": "File:Star empty.svg",
+        "original": {
+          "source": "http://unused.localhost:1234",
+          "width": 108,
+          "height": 110
+        }
+      },
+      {
+        "title": "File:picture of band live.jpg",
+        "missing": true,
+        "known": true,
+        "original": {
+          "source": "http://unused.localhost:1234",
+          "width": 4032,
+          "height": 3024
+        }
+      },
+      {
+        "pageid": 1,
+        "title": "File:Symbol category class.svg",
+        "original": {
+          "source": "http://unused.localhost:1234",
+          "width": 180,
+          "height": 185
+        },
+        "categories": [
+          {
+            "title": "Category:All free media"
+          },
+          {
+            "title": "Category:User-created public domain files"
+          },
+          {
+            "title": "Category:Wikipedia files on Wikimedia Commons for which a local copy has been requested to be kept"
+          },
+          {
+            "title": "Category:Wikipedia files tagged as own work"
+          },
+          {
+            "title": "Category:Wikipedia images in SVG format"
+          },
+          {
+            "title": "Category:Wikipedia indefinitely move-protected pages"
+          },
+          {
+            "title": "Category:Wikipedia upload-protected files"
+          }
+        ]
+      },
+      {
+        "pageid": 2,
+        "title": "File:album picture.png",
+        "original": {
+          "source": "__IMGSERVER_BASEURL__/album1.png",
+          "width": 300,
+          "height": 300
+        },
+        "categories": [
+          {
+            "title": "Category:All non-free media"
+          },
+          {
+            "title": "Category:Album covers"
+          },
+          {
+            "title": "Category:Files with no machine-readable description"
+          }
+        ]
+      }
+    ]
+  }
+}
+-- GET __IMGSERVER_BASEURL__/album1.png --
+HTTP/1.1 200 OK
+Content-Type: image/png
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+level=DEBUG msg="GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __MUSICBRAINZ__/release-group/GROUP1?inc=url-rels%2Bannotation" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __WIKIDATA__/DATA1?_fields=sitelinks" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __WIKIPEDIA__?action=query&format=json&formatversion=2&generator=images&piprop=original&prop=pageimages%7Ccategories&titles=TITLE" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __IMGSERVER_BASEURL__/album1.png" status=200 path=artist1/album1 track=track1.flac
+level=WARN msg="Updated track" picture.url=__IMGSERVER_BASEURL__/album1.png picture.mime=image/png picture.height=1 picture.width=1 path=artist1/album1 track=track1.flac

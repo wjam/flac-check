@@ -1,6 +1,7 @@
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTISTSORT": ["artist1"],
     "ALBUM": ["album1"],
     "TITLE": ["track1"],

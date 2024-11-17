@@ -1,6 +1,7 @@
 -- artist1/album1/track1.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],
@@ -22,6 +23,7 @@
 -- artist1/album1/track2.flac --
 {
   "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
     "ARTIST": ["artist1 and someone else"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],

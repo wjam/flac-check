@@ -125,9 +125,29 @@ func (t *Track) SetSyncedLyrics(ctx context.Context, lyrics string, isInternatio
 	t.newTags["LYRICS"] = []string{lyrics}
 }
 
+func (t *Track) SetMusicBrainzAlbumID(id string) {
+	t.newTags["MUSICBRAINZ_ALBUMID"] = []string{id}
+}
+
+func (t *Track) GetMusicBrainzAlbumID() ([]string, bool) {
+	return t.TagOk("MUSICBRAINZ_ALBUMID")
+}
+
+func (t *Track) GetMusicBrainzDiscID() ([]string, bool) {
+	return t.TagOk("MUSICBRAINZ_DISCID")
+}
+
 func (t *Track) ValidateTags() error {
 	var errs []error
-	for _, tag := range []string{"ARTIST", "TRACKNUMBER", "TRACKTOTAL", "ALBUM", "TITLE", "ARTISTSORT"} {
+	for _, tag := range []string{
+		"ARTIST",
+		"TRACKNUMBER",
+		"TRACKTOTAL",
+		"ALBUM",
+		"TITLE",
+		"ARTISTSORT",
+		"MUSICBRAINZ_ALBUMID",
+	} {
 		if values := t.Tag(tag); len(values) != 1 {
 			errs = append(errs, errors2.ErrNotSingleTagValue{
 				Tag:    tag,

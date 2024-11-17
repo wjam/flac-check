@@ -1,0 +1,90 @@
+# Write flag means update the files
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl __COVERART_BASEURL__ --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_DISCID": ["DISC1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"]
+  }
+}
+-- GET __MUSICBRAINZ__/discid/DISC1 --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "releases": [
+    {
+      "country": "USA"
+    },
+    {
+      "country": "GB",
+      "media": []
+    },
+    {
+      "country": "GB",
+      "media": [
+        {
+          "format": "tape"
+        }
+      ]
+    },
+    {
+      "country": "GB",
+      "media": [
+        {
+          "format": "CD"
+        }
+      ],
+      "id": "RELEASE1"
+    }
+  ]
+}
+-- GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "RELEASE1",
+  "cover-art-archive": {
+    "count": 1
+  }
+}
+-- GET __COVERART_BASEURL__/RELEASE1 --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "images": [
+    {
+      "approved": true,
+      "back": false,
+      "front": true,
+      "thumbnails": {
+        "large": "__IMGSERVER_BASEURL__/album1.png"
+      }
+    }
+  ]
+}
+-- GET __IMGSERVER_BASEURL__/album1.png --
+HTTP/1.1 200 OK
+Content-Type: image/png
+
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+level=DEBUG msg="GET __MUSICBRAINZ__/discid/DISC1" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="Skipping release as incorrect country" country=USA path=artist1/album1 track=track1.flac
+level=DEBUG msg="Skipping release as no media" path=artist1/album1 track=track1.flac
+level=DEBUG msg="Skipping release as incorrect media format" format=tape path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __COVERART_BASEURL__/RELEASE1" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __IMGSERVER_BASEURL__/album1.png" status=200 path=artist1/album1 track=track1.flac
+level=WARN msg="Updated track" tags.MUSICBRAINZ_ALBUMID=RELEASE1 picture.url=__IMGSERVER_BASEURL__/album1.png picture.mime=image/png picture.height=1 picture.width=1 path=artist1/album1 track=track1.flac

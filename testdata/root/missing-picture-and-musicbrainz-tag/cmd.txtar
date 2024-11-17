@@ -1,5 +1,5 @@
 # Tracks without a front cover picture and no musicbrainz ID to look up a picture are invalid
---coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
 -- artist1/album1/track1.flac --
 {
   "tags": {
@@ -24,4 +24,4 @@
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-Error: album artist1/album1: failed to handle track track1.flac: no tag to find image for track
+Error: album artist1/album1: failed to handle track track1.flac: expected single value for "MUSICBRAINZ_ALBUMID", got <nil>

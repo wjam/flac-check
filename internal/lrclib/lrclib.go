@@ -2,10 +2,9 @@ package lrclib
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/cache"
 )
 
 type Client struct {
@@ -18,14 +17,9 @@ func New(opts ...requests.Config) *Client {
 	return &Client{
 		configs: append([]requests.Config{
 			func(rb *requests.Builder) {
-				rb.BaseURL(BaseURL).
-					Transport(requests.LogTransport(
-						&http.Transport{
-							MaxConnsPerHost: 2,
-						},
-						log.HTTP,
-					))
+				rb.BaseURL(BaseURL)
 			},
+			cache.TransportCache(),
 		}, opts...),
 	}
 }
