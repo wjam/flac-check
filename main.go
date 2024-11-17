@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"math"
-	"os"
 	"os/signal"
 	"runtime"
 
@@ -21,10 +20,6 @@ import (
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), shutdownSignals...)
 	defer cancel()
-
-	ctx = log.ContextWithLogger(ctx, slog.New(log.WithAttrsFromContextHandler{
-		Parent: slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}),
-	}))
 
 	if err := root().ExecuteContext(ctx); err != nil {
 		panic(err)
