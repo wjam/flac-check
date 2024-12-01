@@ -3,7 +3,7 @@ module github.com/wjam/flac-check
 go 1.23
 
 require (
-	github.com/carlmjohnson/requests v0.24.2
+	github.com/carlmjohnson/requests v0.24.3
 	github.com/go-flac/flacpicture/v2 v2.0.2
 	github.com/go-flac/flacvorbis/v2 v2.0.2
 	github.com/go-flac/go-flac/v2 v2.0.2
