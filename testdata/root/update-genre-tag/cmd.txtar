@@ -1,0 +1,74 @@
+# Albums with inconsistent GENRE tag, where one doesn't have a genre, should fail
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl __MUSICBRAINZ__ --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["metal", "rock"],
+    "MUSICBRAINZ_ALBUMID": ["releaseID2"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- artist1/album1/track2.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track2"],
+    "TRACKNUMBER": ["2"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "MUSICBRAINZ_ALBUMID": ["releaseID2"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups+genres --
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "releaseID2",
+  "cover-art-archive": {
+    "count": 0
+  },
+  "release-group": {
+    "genres": [
+      {
+        "id": "1234",
+        "name": "rock"
+      },
+      {
+        "id": "45678",
+        "name": "metal"
+      }
+    ]
+  }
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+level=DEBUG msg="GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups+genres" status=200 path=artist1/album1 track=track2.flac
+level=WARN msg="Updated track" tags.GENRE=metal,rock path=artist1/album1 track=track2.flac

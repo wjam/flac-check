@@ -1,0 +1,31 @@
+# No write flag means don't update the files
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "MUSICBRAINZ_ARTISTID": ["ART1"],
+    "MUSICBRAINZ_ALBUMARTISTID": ["http://musicbrainz.org/artist/ART12"],
+    "MUSICBRAINZ_TRACKID": ["TR1"],
+    "ARTIST": ["artist1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+level=WARN msg="Updated track" tags.MUSICBRAINZ_ALBUMARTISTID=ART12 path=artist1/album1 track=track1.flac

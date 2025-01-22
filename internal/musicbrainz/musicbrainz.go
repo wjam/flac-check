@@ -47,7 +47,7 @@ func (c *Client) GetReleaseFromReleaseID(ctx context.Context, albumID string) (R
 	var release Release
 	if err := requests.New(c.configs...).
 		Pathf("./release/%s", albumID).
-		Param("inc", "release-groups").
+		Param("inc", "release-groups genres").
 		Accept("application/json").
 		ToJSON(&release).
 		Fetch(ctx); err != nil {
@@ -121,7 +121,11 @@ type Release struct {
 		Format string `json:"format"`
 	} `json:"media"`
 	ReleaseGroup struct {
-		Id string `json:"id"`
+		Id     string `json:"id"`
+		Genres []struct {
+			Id   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"genres"`
 	} `json:"release-group"`
 }
 

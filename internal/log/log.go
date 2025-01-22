@@ -55,12 +55,7 @@ func (w WithAttrsFromContextHandler) Handle(ctx context.Context, record slog.Rec
 		record.AddAttrs(v.([]slog.Attr)...)
 	}
 
-	newRecord := slog.Record{
-		Time:    record.Time,
-		Message: record.Message,
-		Level:   record.Level,
-		PC:      record.PC,
-	}
+	newRecord := slog.NewRecord(record.Time, record.Level, record.Message, record.PC)
 
 	if slices.Contains(w.IgnoredAttributes, "time") {
 		newRecord.Time = time.Time{}

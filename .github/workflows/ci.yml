@@ -19,4 +19,4 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Test
-        run: go test -count=1 ./... -cover -coverpkg=./...
+        run: go run ./build

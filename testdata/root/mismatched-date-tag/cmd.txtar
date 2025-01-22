@@ -11,7 +11,8 @@
     "TRACKNUMBER": ["1"],
     "TRACKTOTAL": ["2"],
     "DATE": ["2024-01-01"],
-    "LYRICS": [""]
+    "LYRICS": [""],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {
@@ -33,7 +34,8 @@
     "TRACKNUMBER": ["2"],
     "TRACKTOTAL": ["2"],
     "DATE": ["2024"],
-    "LYRICS": [""]
+    "LYRICS": [""],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {

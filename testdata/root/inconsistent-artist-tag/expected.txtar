@@ -9,7 +9,8 @@
     "TITLE": ["track1"],
     "TRACKNUMBER": ["1"],
     "TRACKTOTAL": ["1"],
-    "DATE": ["2024"]
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {
@@ -30,7 +31,8 @@
     "TITLE": ["track2"],
     "TRACKNUMBER": ["2"],
     "TRACKTOTAL": ["1"],
-    "DATE": ["2024"]
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {
