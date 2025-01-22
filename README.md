@@ -9,6 +9,7 @@ Tool for maintaining my music FLAC files:
 ## TODO
 * Add alternative lyric sources, such as https://genius.com/developers
 * Add a test that pictures with the wrong mime type fail. There is the issue of building the FLAC in the first place, as the library enforces this.
+* Use Go 1.24 tool dependency mechanic
 
 ## NOTES
 
