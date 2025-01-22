@@ -14,7 +14,7 @@
     "DATE": ["2024"]
   }
 }
--- GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups --
+-- GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups+genres --
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -154,7 +154,7 @@ iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAA
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-level=DEBUG msg="GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups+genres" status=200 path=artist1/album1 track=track1.flac
 level=DEBUG msg="GET __MUSICBRAINZ__/release-group/GROUP1?inc=url-rels%2Bannotation" status=200 path=artist1/album1 track=track1.flac
 level=DEBUG msg="GET __WIKIDATA__/DATA1?_fields=sitelinks" status=200 path=artist1/album1 track=track1.flac
 level=DEBUG msg="GET __WIKIPEDIA__?action=query&format=json&formatversion=2&generator=images&piprop=original&prop=pageimages%7Ccategories&titles=TITLE" status=200 path=artist1/album1 track=track1.flac

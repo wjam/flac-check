@@ -61,5 +61,24 @@ func (a album) validateTags() []error {
 		}
 	}
 
+	if err := a.validateConsistentGenre(); err != nil {
+		errs = append(errs, err)
+	}
+
 	return errs
+}
+
+func (a album) validateConsistentGenre() error {
+	genres, _ := a[0].GetGenres()
+
+	for _, t := range a {
+		other, _ := t.GetGenres()
+		if !slices.Equal(genres, other) {
+			return errors.ErrInvalidGenreTag{
+				Values: a.getTag("GENRE"),
+			}
+		}
+	}
+
+	return nil
 }

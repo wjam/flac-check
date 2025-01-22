@@ -2,14 +2,18 @@
 {
   "tags": {
     "MUSICBRAINZ_ALBUMID": ["ID1"],
-    "ARTIST": ["King Size Slim"],
+    "MUSICBRAINZ_ARTISTID": ["http://musicbrainz.org/artist/ART1"],
+    "MUSICBRAINZ_ALBUMARTISTID": ["ART12"],
+    "MUSICBRAINZ_TRACKID": ["TR1"],
+    "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],
-    "ALBUM": ["Only My Good Self to Blame"],
-    "ALBUMARTIST": ["artist1"],
+    "ALBUM": ["album1"],
     "TITLE": ["track1"],
     "TRACKNUMBER": ["1"],
-    "TRACKTOTAL": ["1"]
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {

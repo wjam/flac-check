@@ -10,7 +10,8 @@
     "TITLE": ["track1"],
     "TRACKNUMBER": ["1"],
     "TRACKTOTAL": ["1"],
-    "DATE": ["2024"]
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {
@@ -65,7 +66,7 @@ Content-Type: application/json
     }
   ]
 }
--- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups --
+-- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups+genres --
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -95,7 +96,7 @@ level=DEBUG msg="Processing album" path=artist1/album1
 level=DEBUG msg="GET __LRCLIB_BASEURL__/get?album_name=album1&artist_name=artist1&track_name=track1" status=200 path=artist1/album1 track=track1.flac
 level=WARN msg="Updated track" tags.LYRICS="something synced" path=artist1/album1 track=track1.flac
 level=DEBUG msg="Processing album" path=artist1/album2
-level=DEBUG msg="GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups" status=200 path=artist1/album2 track=track1.flac
+level=DEBUG msg="GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups+genres" status=200 path=artist1/album2 track=track1.flac
 level=DEBUG msg="GET __COVERART_BASEURL__/releaseID2" status=200 path=artist1/album2 track=track1.flac
 level=DEBUG msg="GET __IMGSERVER_BASEURL__/album2.png" status=200 path=artist1/album2 track=track1.flac
 level=WARN msg="Updated track" picture.url=__IMGSERVER_BASEURL__/album2.png picture.mime=image/png picture.height=1 picture.width=1 path=artist1/album2 track=track1.flac

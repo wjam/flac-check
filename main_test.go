@@ -145,13 +145,35 @@ func TestRoot(t *testing.T) {
 				},
 			},
 		},
-		{name: "king-size-slim"},
+		{name: "missing-date-tag-skipped"},
 		{name: "international-lyrics-for-non-international-artist"},
 		{name: "international-lyrics-for-international-artist"},
 		{name: "funky-lyric-chars-dropped"},
 		{name: "default-log-level"},
 		{name: "musicbrainz-release-id-from-disc-id"},
 		{name: "picture-from-wikipedia"},
+		{
+			name: "inconsistent-genre-tag",
+			expectedErrs: []error{
+				errors.ErrInvalidGenreTag{
+					Values: []string{"granite", "rock"},
+				},
+			},
+		},
+		{
+			name: "inconsistent-genre-tag-with-missing",
+			expectedErrs: []error{
+				errors.ErrInvalidGenreTag{
+					Values: []string{"metal", "rock"},
+				},
+			},
+		},
+		{name: "update-genre-tag"},
+		{name: "fix-bad-musicbrainz-albumartistid-tag"},
+		{name: "fix-bad-musicbrainz-albumid-tag"},
+		{name: "fix-bad-musicbrainz-artistid-tag"},
+		{name: "fix-bad-musicbrainz-trackid-tag"},
+		{name: "missing-musicbrainz-albumid-skipped"},
 	}
 
 	for _, test := range tests {

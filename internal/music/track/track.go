@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -101,6 +102,12 @@ func (t *Track) HasLyrics() bool {
 	return false
 }
 
+func (t *Track) HasGenre() bool {
+	_, ok := t.GetGenres()
+
+	return ok
+}
+
 func (t *Track) SetUnsyncedLyrics(ctx context.Context, lyrics string, isInternational bool) {
 	if _, ok := t.TagOk("LYRICS"); ok {
 		panic("check if track already has lyrics")
@@ -133,8 +140,26 @@ func (t *Track) GetMusicBrainzAlbumID() ([]string, bool) {
 	return t.TagOk("MUSICBRAINZ_ALBUMID")
 }
 
+func (t *Track) SetGenres(genres []string) {
+	t.newTags["GENRE"] = genres
+}
+
+func (t *Track) GetGenres() ([]string, bool) {
+	return t.TagOk("GENRE")
+}
+
 func (t *Track) GetMusicBrainzDiscID() ([]string, bool) {
 	return t.TagOk("MUSICBRAINZ_DISCID")
+}
+
+func (t *Track) CorrectTags() {
+	for tag, reg := range tagFixes {
+		for _, value := range t.Tag(tag) {
+			if matches := reg.FindStringSubmatch(value); matches != nil {
+				t.newTags[tag] = []string{matches[1]}
+			}
+		}
+	}
 }
 
 func (t *Track) ValidateTags() error {
@@ -149,10 +174,28 @@ func (t *Track) ValidateTags() error {
 		"MUSICBRAINZ_ALBUMID",
 	} {
 		if values := t.Tag(tag); len(values) != 1 {
+			if tag == "MUSICBRAINZ_ALBUMID" &&
+				((slices.Contains(t.Tag("ARTIST"), "King Size Slim") && slices.Contains(t.Tag("ALBUM"), "Live at The Man of Kent Alehouse")) ||
+					(slices.Contains(t.Tag("ARTIST"), "House of the Rising Sun") && slices.Contains(t.Tag("ALBUM"), "Tar Babies"))) {
+				// No musicbrainz entries
+				continue
+			}
 			errs = append(errs, errors2.ErrNotSingleTagValue{
 				Tag:    tag,
 				Values: values,
 			})
+		}
+	}
+
+	for tag, reg := range validTagValues {
+		for _, value := range t.Tag(tag) {
+			if !reg.MatchString(value) {
+				errs = append(errs, errors2.ErrInvalidTagValue{
+					Tag:     tag,
+					Pattern: reg.String(),
+					Value:   value,
+				})
+			}
 		}
 	}
 
@@ -228,6 +271,9 @@ func (t *Track) updateFlacWithNewTags() error {
 	}
 
 	for k, vs := range t.newTags {
+		if _, ok := t.tags[k]; ok {
+			removeComment(comment, k)
+		}
 		for _, v := range vs {
 			if err := comment.Add(k, v); err != nil {
 				return err
@@ -334,6 +380,15 @@ func tidyUpLyrics(ctx context.Context, text string, isInternational bool) string
 	return ""
 }
 
+func removeComment(b *flacvorbis.MetaDataBlockVorbisComment, name string) {
+	for i := 0; i < len(b.Comments); i++ {
+		if strings.HasPrefix(b.Comments[i], fmt.Sprintf("%s=", name)) {
+			b.Comments = append(b.Comments[:i], b.Comments[i+1:]...)
+			i--
+		}
+	}
+}
+
 // non-marker characters that commonly appear in lyrics that definitely aren't international characters
 var emojis = map[rune]struct{}{
 	'♪': {},
@@ -357,3 +412,19 @@ func notEnglishOrEmojiCharacters(r rune) bool {
 type marshalable interface {
 	Marshal() flac.MetaDataBlock
 }
+
+var (
+	validTagValues = map[string]*regexp.Regexp{
+		"MUSICBRAINZ_ALBUMID":       regexp.MustCompile("^[A-Za-z0-9-]+$"),
+		"MUSICBRAINZ_ALBUMARTISTID": regexp.MustCompile("^[A-Za-z0-9-]+$"),
+		"MUSICBRAINZ_ARTISTID":      regexp.MustCompile("^[A-Za-z0-9-]+$"),
+		"MUSICBRAINZ_TRACKID":       regexp.MustCompile("^[A-Za-z0-9-]+$"),
+	}
+
+	tagFixes = map[string]*regexp.Regexp{
+		"MUSICBRAINZ_ALBUMID":       regexp.MustCompile("^http://musicbrainz.org/release/(.*).html$"),
+		"MUSICBRAINZ_ALBUMARTISTID": regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
+		"MUSICBRAINZ_ARTISTID":      regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
+		"MUSICBRAINZ_TRACKID":       regexp.MustCompile("^http://musicbrainz.org/track/(.*)$"),
+	}
+)

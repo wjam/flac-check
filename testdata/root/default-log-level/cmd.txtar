@@ -10,7 +10,8 @@
     "TITLE": ["track1"],
     "TRACKNUMBER": ["1"],
     "TRACKTOTAL": ["1"],
-    "DATE": ["2024"]
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {
@@ -65,7 +66,7 @@ Content-Type: application/json
     }
   ]
 }
--- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups --
+-- GET __MUSICBRAINZ__/release/releaseID2?inc=release-groups+genres --
 HTTP/1.1 200 OK
 Content-Type: application/json
 

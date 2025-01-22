@@ -1,0 +1,27 @@
+# Only this album is allowed to not have a DATE, as I'm not sure when it was released
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTIST": ["King Size Slim"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ALBUM": ["Only My Good Self to Blame"],
+    "ALBUMARTIST": ["artist1"],
+    "TITLE": ["track1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "GENRE": ["BLUES"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1

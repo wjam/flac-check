@@ -15,5 +15,5 @@
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-Error: album artist1/album1: expected single value for "ALBUMARTIST" when multiple "ARTIST", got <nil> & <nil>
-failed to handle track track1.flac: expected single value for "ARTIST", got <nil>
+Error: album artist1/album1: failed to handle track track1.flac: expected single value for "ARTIST", got <nil>
+expected single value for "ALBUMARTIST" when multiple "ARTIST", got <nil> & <nil>

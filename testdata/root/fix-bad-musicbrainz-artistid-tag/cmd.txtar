@@ -1,17 +1,21 @@
-# Only this album is allowed to not have a DATE, as I'm not sure when it was released
+# No write flag means don't update the files
 --wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
 -- artist1/album1/track1.flac --
 {
   "tags": {
     "MUSICBRAINZ_ALBUMID": ["ID1"],
-    "ARTIST": ["King Size Slim"],
+    "MUSICBRAINZ_ARTISTID": ["http://musicbrainz.org/artist/ART1"],
+    "MUSICBRAINZ_ALBUMARTISTID": ["ART12"],
+    "MUSICBRAINZ_TRACKID": ["TR1"],
+    "ARTIST": ["artist1"],
     "ARTISTSORT": ["artist1"],
     "LYRICS": ["existing lyrics"],
-    "ALBUM": ["Only My Good Self to Blame"],
-    "ALBUMARTIST": ["artist1"],
+    "ALBUM": ["album1"],
     "TITLE": ["track1"],
     "TRACKNUMBER": ["1"],
-    "TRACKTOTAL": ["1"]
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   },
   "pictures": [
     {
@@ -24,3 +28,4 @@
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
+level=WARN msg="Updated track" tags.MUSICBRAINZ_ARTISTID=ART1 path=artist1/album1 track=track1.flac

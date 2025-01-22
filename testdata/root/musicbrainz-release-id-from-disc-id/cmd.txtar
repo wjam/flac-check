@@ -46,7 +46,7 @@ Content-Type: application/json
     }
   ]
 }
--- GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups --
+-- GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups+genres --
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -84,7 +84,7 @@ level=DEBUG msg="GET __MUSICBRAINZ__/discid/DISC1" status=200 path=artist1/album
 level=DEBUG msg="Skipping release as incorrect country" country=USA path=artist1/album1 track=track1.flac
 level=DEBUG msg="Skipping release as no media" path=artist1/album1 track=track1.flac
 level=DEBUG msg="Skipping release as incorrect media format" format=tape path=artist1/album1 track=track1.flac
-level=DEBUG msg="GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups" status=200 path=artist1/album1 track=track1.flac
+level=DEBUG msg="GET __MUSICBRAINZ__/release/RELEASE1?inc=release-groups+genres" status=200 path=artist1/album1 track=track1.flac
 level=DEBUG msg="GET __COVERART_BASEURL__/RELEASE1" status=200 path=artist1/album1 track=track1.flac
 level=DEBUG msg="GET __IMGSERVER_BASEURL__/album1.png" status=200 path=artist1/album1 track=track1.flac
 level=WARN msg="Updated track" tags.MUSICBRAINZ_ALBUMID=RELEASE1 picture.url=__IMGSERVER_BASEURL__/album1.png picture.mime=image/png picture.height=1 picture.width=1 path=artist1/album1 track=track1.flac

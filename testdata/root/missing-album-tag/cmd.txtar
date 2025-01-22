@@ -9,11 +9,12 @@
     "TITLE": ["track1"],
     "TRACKNUMBER": ["1"],
     "TRACKTOTAL": ["1"],
-    "DATE": ["2024"]
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
   }
 }
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-Error: album artist1/album1: expected single value for "ALBUM", got <nil>
-failed to handle track track1.flac: expected single value for "ALBUM", got <nil>
+Error: album artist1/album1: failed to handle track track1.flac: expected single value for "ALBUM", got <nil>
+expected single value for "ALBUM", got <nil>

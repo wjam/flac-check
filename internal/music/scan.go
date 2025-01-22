@@ -10,6 +10,7 @@ import (
 
 	"github.com/wjam/flac-check/internal/log"
 	"github.com/wjam/flac-check/internal/music/track"
+	"github.com/wjam/flac-check/internal/util"
 )
 
 func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry) error {
@@ -27,14 +28,14 @@ func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry
 
 	var errs []error
 
-	errs = append(errs, album.validateTags()...)
-
 	for _, m := range album {
 		ctx := log.WithAttrs(ctx, slog.String("track", m.String()))
 		if err := s.handleTrack(ctx, m); err != nil {
 			errs = append(errs, fmt.Errorf("failed to handle track %s: %w", m, err))
 		}
 	}
+
+	errs = append(errs, album.validateTags()...)
 
 	if len(errs) > 0 {
 		return errors.Join(errs...)
@@ -49,15 +50,24 @@ func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry
 }
 
 func (s *Scan) handleTrack(ctx context.Context, track *track.Track) error {
+	track.CorrectTags()
+
 	if err := s.addMusicBrainzAlbumID(ctx, track); err != nil {
 		return err
 	}
+
 	if err := track.ValidateTags(); err != nil {
 		return err
 	}
 
 	if !track.HasPicture() {
 		if err := s.addFrontCoverToTrack(ctx, track); err != nil {
+			return err
+		}
+	}
+
+	if !track.HasGenre() {
+		if err := s.addGenreTag(ctx, track); err != nil {
 			return err
 		}
 	}
@@ -72,8 +82,7 @@ func (s *Scan) handleTrack(ctx context.Context, track *track.Track) error {
 }
 
 func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, track *track.Track) error {
-	_, ok := track.GetMusicBrainzAlbumID()
-	if ok {
+	if _, ok := track.GetMusicBrainzAlbumID(); ok {
 		return nil
 	}
 
@@ -97,7 +106,10 @@ func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, track *track.Track) er
 }
 
 func (s *Scan) addFrontCoverToTrack(ctx context.Context, track *track.Track) error {
-	albumId, _ := track.GetMusicBrainzAlbumID()
+	albumId, ok := track.GetMusicBrainzAlbumID()
+	if !ok {
+		return nil
+	}
 
 	rel, err := s.music.GetReleaseFromReleaseID(ctx, albumId[0])
 	if err != nil {
@@ -164,4 +176,29 @@ func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
 	}
 
 	return fmt.Errorf("lyrics was empty")
+}
+
+func (s *Scan) addGenreTag(ctx context.Context, track *track.Track) error {
+	albumId, ok := track.GetMusicBrainzAlbumID()
+	if !ok {
+		return nil
+	}
+
+	rel, err := s.music.GetReleaseFromReleaseID(ctx, albumId[0])
+	if err != nil {
+		return err
+	}
+
+	genres := map[string]struct{}{}
+	for _, genre := range rel.ReleaseGroup.Genres {
+		genres[genre.Name] = struct{}{}
+	}
+
+	if len(genres) > 0 {
+		genres := util.Keys(genres)
+		slices.Sort(genres)
+		track.SetGenres(genres)
+	}
+
+	return nil
 }

@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"sync"
+	"time"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/wjam/flac-check/internal/log"
+	"golang.org/x/time/rate"
 )
 
 var cache = &cacheTripper{
@@ -29,6 +31,7 @@ var _ http.RoundTripper = &cacheTripper{}
 type cacheTripper struct {
 	parent http.RoundTripper
 	cache  sync.Map
+	limit  sync.Map
 }
 
 func (c *cacheTripper) RoundTrip(request *http.Request) (*http.Response, error) {
@@ -36,6 +39,12 @@ func (c *cacheTripper) RoundTrip(request *http.Request) (*http.Response, error) 
 	res, ok := c.cache.Load(key)
 	if ok {
 		return http.ReadResponse(bufio.NewReader(bytes.NewReader(res.([]byte))), request)
+	}
+
+	// limit requests to a host to 1 request per second - the musicbrainz API rate limit
+	limit, _ := c.limit.LoadOrStore(request.URL.Host, rate.NewLimiter(rate.Every(1*time.Second), 1))
+	if err := limit.(*rate.Limiter).Wait(request.Context()); err != nil {
+		return nil, err
 	}
 
 	response, err := c.parent.RoundTrip(request)
