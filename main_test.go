@@ -174,6 +174,8 @@ func TestRoot(t *testing.T) {
 		{name: "fix-bad-musicbrainz-artistid-tag"},
 		{name: "fix-bad-musicbrainz-trackid-tag"},
 		{name: "missing-musicbrainz-albumid-skipped"},
+		{name: "replace-unknown-genre-tag"},
+		{name: "remove-unknown-genre-tag"},
 	}
 
 	for _, test := range tests {

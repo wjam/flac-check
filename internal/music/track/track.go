@@ -103,9 +103,9 @@ func (t *Track) HasLyrics() bool {
 }
 
 func (t *Track) HasGenre() bool {
-	_, ok := t.GetGenres()
+	v, ok := t.GetGenres()
 
-	return ok
+	return ok && len(v) > 0
 }
 
 func (t *Track) SetUnsyncedLyrics(ctx context.Context, lyrics string, isInternational bool) {
@@ -158,6 +158,20 @@ func (t *Track) CorrectTags() {
 			if matches := reg.FindStringSubmatch(value); matches != nil {
 				t.newTags[tag] = []string{matches[1]}
 			}
+		}
+	}
+
+	for tag, bad := range tagInvalids {
+		tagValues := t.Tag(tag)
+		changed := false
+		for _, value := range bad {
+			if i := slices.Index(tagValues, value); i != -1 {
+				changed = true
+				tagValues = append(tagValues[:i], tagValues[i+1:]...)
+			}
+		}
+		if changed {
+			t.newTags[tag] = tagValues
 		}
 	}
 }
@@ -317,7 +331,11 @@ func (t *Track) changesToSlogAttrs() []any {
 	if len(t.newTags) > 0 {
 		var tagAttrs []any
 		for k, v := range t.newTags {
-			tagAttrs = append(tagAttrs, slog.String(k, strings.Join(v, ",")))
+			value := "__TAG_REMOVED__"
+			if len(v) > 0 {
+				value = strings.Join(v, ",")
+			}
+			tagAttrs = append(tagAttrs, slog.String(k, value))
 		}
 		attrs = append(attrs, slog.Group("tags", tagAttrs...))
 	}
@@ -426,5 +444,9 @@ var (
 		"MUSICBRAINZ_ALBUMARTISTID": regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
 		"MUSICBRAINZ_ARTISTID":      regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
 		"MUSICBRAINZ_TRACKID":       regexp.MustCompile("^http://musicbrainz.org/track/(.*)$"),
+	}
+
+	tagInvalids = map[string][]string{
+		"GENRE": {"Unknown"},
 	}
 )
