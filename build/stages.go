@@ -7,7 +7,6 @@ var stageInit = goyek.Define(goyek.Task{
 	Usage: "init stage",
 	Deps: goyek.Deps{
 		goGenerate,
-		fmtCheck,
 	},
 })
 
@@ -15,7 +14,7 @@ var stageTest = goyek.Define(goyek.Task{
 	Name:  "test",
 	Usage: "test stage",
 	Deps: goyek.Deps{
-		goVet,
+		golangciLint,
 		goTest,
 	},
 })
