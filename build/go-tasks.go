@@ -17,15 +17,6 @@ var goGenerate = goyek.Define(goyek.Task{
 	},
 })
 
-var goVet = goyek.Define(goyek.Task{
-	Name:  "go-vet",
-	Usage: "go vet",
-	Action: func(a *goyek.A) {
-		cmd.Exec(a, "go vet ./...")
-	},
-	// TODO switch to go run golangci-lint when Go 1.24
-})
-
 var goTest = goyek.Define(goyek.Task{
 	Name:  "go-test",
 	Usage: "go test",

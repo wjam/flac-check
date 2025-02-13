@@ -12,7 +12,9 @@ updates:
           - "minor"
           - "patch"
   - package-ecosystem: "gomod"
-    directory: "/"
+    directories:
+      - "/"
+      - "/tools/golangci-lint"
     schedule:
       interval: "monthly"
     groups:
