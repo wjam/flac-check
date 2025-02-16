@@ -355,7 +355,7 @@ func (h requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func contextFromTesting(t *testing.T) context.Context {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	d, ok := t.Deadline()
 	if !ok {
