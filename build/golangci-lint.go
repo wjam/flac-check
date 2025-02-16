@@ -6,16 +6,16 @@ import (
 )
 
 var golangciLint = goyek.Define(goyek.Task{
-	Name:  "golangci-lint",
-	Usage: "golangci-lint",
+	Name:  "lint",
+	Usage: "lint",
 	Action: func(a *goyek.A) {
 		cmd.Exec(a, "go tool -modfile=./tools/golangci-lint/go.mod golangci-lint run")
 	},
 })
 
 var _ = goyek.Define(goyek.Task{
-	Name:  "golangci-lint-fix",
-	Usage: "golangci-lint-fix",
+	Name:  "lint-fix",
+	Usage: "lint-fix",
 	Action: func(a *goyek.A) {
 		cmd.Exec(a, "go tool -modfile=./tools/golangci-lint/go.mod golangci-lint run --fix")
 	},
