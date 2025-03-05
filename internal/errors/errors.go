@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-var _ error = ErrNotSingleAlbumArtist{}
+var _ error = NotSingleAlbumArtistError{}
 
-type ErrNotSingleAlbumArtist struct {
+type NotSingleAlbumArtistError struct {
 	Artists      []string
 	AlbumArtists []string
 }
 
-func (e ErrNotSingleAlbumArtist) Error() string {
+func (e NotSingleAlbumArtistError) Error() string {
 	return fmt.Sprintf(
 		`expected single value for "ALBUMARTIST" when multiple "ARTIST", got %s & %s`,
 		join(e.Artists),
@@ -21,22 +21,22 @@ func (e ErrNotSingleAlbumArtist) Error() string {
 	)
 }
 
-func (e ErrNotSingleAlbumArtist) Is(err error) bool {
-	e2, ok := err.(ErrNotSingleAlbumArtist)
+func (e NotSingleAlbumArtistError) Is(err error) bool {
+	e2, ok := err.(NotSingleAlbumArtistError)
 	if !ok {
 		return false
 	}
 	return slices.Equal(e.AlbumArtists, e2.AlbumArtists) && slices.Equal(e.Artists, e2.Artists)
 }
 
-var _ error = ErrNotSingleTagValue{}
+var _ error = NotSingleTagValueError{}
 
-type ErrNotSingleTagValue struct {
+type NotSingleTagValueError struct {
 	Tag    string
 	Values []string
 }
 
-func (e ErrNotSingleTagValue) Error() string {
+func (e NotSingleTagValueError) Error() string {
 	return fmt.Sprintf(
 		"expected single value for %q, got %s",
 		e.Tag,
@@ -44,22 +44,22 @@ func (e ErrNotSingleTagValue) Error() string {
 	)
 }
 
-func (e ErrNotSingleTagValue) Is(err error) bool {
-	e2, ok := err.(ErrNotSingleTagValue)
+func (e NotSingleTagValueError) Is(err error) bool {
+	e2, ok := err.(NotSingleTagValueError)
 	if !ok {
 		return false
 	}
 	return e.Tag == e2.Tag && slices.Equal(e.Values, e2.Values)
 }
 
-var _ error = ErrInvalidValue{}
+var _ error = InvalidValueError{}
 
-type ErrInvalidValue struct {
+type InvalidValueError struct {
 	Tag    string
 	Values []string
 }
 
-func (e ErrInvalidValue) Error() string {
+func (e InvalidValueError) Error() string {
 	return fmt.Sprintf(
 		"expected valid value for %q, got %s",
 		e.Tag,
@@ -67,44 +67,44 @@ func (e ErrInvalidValue) Error() string {
 	)
 }
 
-func (e ErrInvalidValue) Is(err error) bool {
-	e2, ok := err.(ErrInvalidValue)
+func (e InvalidValueError) Is(err error) bool {
+	e2, ok := err.(InvalidValueError)
 	if !ok {
 		return false
 	}
 	return e.Tag == e2.Tag && slices.Equal(e.Values, e2.Values)
 }
 
-var _ error = ErrInvalidGenreTag{}
+var _ error = InvalidGenreTagError{}
 
-type ErrInvalidGenreTag struct {
+type InvalidGenreTagError struct {
 	Values []string
 }
 
-func (e ErrInvalidGenreTag) Error() string {
+func (e InvalidGenreTagError) Error() string {
 	return fmt.Sprintf(
 		"expected consistent value for genre, got %s",
 		join(e.Values),
 	)
 }
 
-func (e ErrInvalidGenreTag) Is(err error) bool {
-	e2, ok := err.(ErrInvalidGenreTag)
+func (e InvalidGenreTagError) Is(err error) bool {
+	e2, ok := err.(InvalidGenreTagError)
 	if !ok {
 		return false
 	}
 	return slices.Equal(e.Values, e2.Values)
 }
 
-var _ error = ErrInvalidTagValue{}
+var _ error = InvalidTagValueError{}
 
-type ErrInvalidTagValue struct {
+type InvalidTagValueError struct {
 	Tag     string
 	Pattern string
 	Value   string
 }
 
-func (e ErrInvalidTagValue) Error() string {
+func (e InvalidTagValueError) Error() string {
 	return fmt.Sprintf(
 		"expected value for %q matching %q, got %s",
 		e.Tag,
@@ -113,8 +113,8 @@ func (e ErrInvalidTagValue) Error() string {
 	)
 }
 
-func (e ErrInvalidTagValue) Is(err error) bool {
-	e2, ok := err.(ErrInvalidTagValue)
+func (e InvalidTagValueError) Is(err error) bool {
+	e2, ok := err.(InvalidTagValueError)
 	if !ok {
 		return false
 	}

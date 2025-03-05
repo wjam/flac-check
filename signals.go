@@ -4,4 +4,6 @@ package main
 
 import "os"
 
-var shutdownSignals = []os.Signal{os.Interrupt}
+func shutdownSignals() []os.Signal {
+	return []os.Signal{os.Interrupt}
+}

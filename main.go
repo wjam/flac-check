@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), shutdownSignals...)
+	ctx, cancel := signal.NotifyContext(context.Background(), shutdownSignals()...)
 	defer cancel()
 
 	if err := root().ExecuteContext(ctx); err != nil {
@@ -36,7 +36,7 @@ func root() *cobra.Command {
 		Short:        "check all FLAC music files",
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := log.ContextWithLogger(cmd.Context(), slog.New(log.WithAttrsFromContextHandler{
 				Parent:            slog.NewTextHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{Level: logLevel.level}),
 				IgnoredAttributes: removeLogAttrs,
@@ -77,19 +77,22 @@ func root() *cobra.Command {
 	)
 
 	const (
-		coverartBaseUrl    = "coverart-baseurl"
-		lrclibBaseUrl      = "lrclib-baseurl"
-		musicbrainzBaseUrl = "musicbrainz-baseurl"
-		wikipediaBaseUrl   = "wikipedia-baseurl"
-		wikidataBaseUrl    = "wikidata-baseurl"
+		coverartBaseURL    = "coverart-baseurl"
+		lrclibBaseURL      = "lrclib-baseurl"
+		musicbrainzBaseURL = "musicbrainz-baseurl"
+		wikipediaBaseURL   = "wikipedia-baseurl"
+		wikidataBaseURL    = "wikidata-baseurl"
 	)
-	cmd.Flags().StringVar(&opts.CoverartBaseUrl, coverartBaseUrl, coverart.BaseURL, "")
-	cmd.Flags().StringVar(&opts.LrclibBaseUrl, lrclibBaseUrl, lrclib.BaseURL, "")
-	cmd.Flags().StringVar(&opts.MusicbrainzBaseUrl, musicbrainzBaseUrl, musicbrainz.BaseURL, "")
-	cmd.Flags().StringVar(&opts.WikipediaBaseUrl, wikipediaBaseUrl, wikipedia.BaseURL, "")
-	cmd.Flags().StringVar(&opts.WikidataBaseUrl, wikidataBaseUrl, wikidata.BaseURL, "")
+	cmd.Flags().StringVar(&opts.CoverartBaseURL, coverartBaseURL, coverart.BaseURL, "")
+	cmd.Flags().StringVar(&opts.LrclibBaseURL, lrclibBaseURL, lrclib.BaseURL, "")
+	cmd.Flags().StringVar(&opts.MusicbrainzBaseURL, musicbrainzBaseURL, musicbrainz.BaseURL, "")
+	cmd.Flags().StringVar(&opts.WikipediaBaseURL, wikipediaBaseURL, wikipedia.BaseURL, "")
+	cmd.Flags().StringVar(&opts.WikidataBaseURL, wikidataBaseURL, wikidata.BaseURL, "")
 
-	for _, s := range []string{coverartBaseUrl, lrclibBaseUrl, musicbrainzBaseUrl, lrclibBaseUrl, musicbrainzBaseUrl, wikipediaBaseUrl, wikidataBaseUrl} {
+	for _, s := range []string{
+		coverartBaseURL, lrclibBaseURL, musicbrainzBaseURL, lrclibBaseURL,
+		musicbrainzBaseURL, wikipediaBaseURL, wikidataBaseURL,
+	} {
 		if err := cmd.Flags().MarkHidden(s); err != nil {
 			panic(err)
 		}

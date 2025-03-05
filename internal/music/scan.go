@@ -9,7 +9,9 @@ import (
 	"slices"
 
 	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/lrclib"
 	"github.com/wjam/flac-check/internal/music/track"
+	"github.com/wjam/flac-check/internal/musicbrainz"
 	"github.com/wjam/flac-check/internal/util"
 )
 
@@ -93,25 +95,25 @@ func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, track *track.Track) er
 
 	rel, err := s.music.GetReleaseFromDiscID(ctx, v[0])
 	if err != nil {
+		if errors.Is(err, musicbrainz.ErrNoReleaseFound) {
+			log.Logger(ctx).InfoContext(ctx, "Unable to populate musicbrainz album ID")
+			return nil
+		}
 		return err
 	}
-	if rel == nil {
-		log.Logger(ctx).InfoContext(ctx, "Unable to populate musicbrainz album ID")
-		return nil
-	}
 
-	track.SetMusicBrainzAlbumID(rel.Id)
+	track.SetMusicBrainzAlbumID(rel.ID)
 
 	return nil
 }
 
 func (s *Scan) addFrontCoverToTrack(ctx context.Context, track *track.Track) error {
-	albumId, ok := track.GetMusicBrainzAlbumID()
+	albumID, ok := track.GetMusicBrainzAlbumID()
 	if !ok {
 		return nil
 	}
 
-	rel, err := s.music.GetReleaseFromReleaseID(ctx, albumId[0])
+	rel, err := s.music.GetReleaseFromReleaseID(ctx, albumID[0])
 	if err != nil {
 		return err
 	}
@@ -119,20 +121,20 @@ func (s *Scan) addFrontCoverToTrack(ctx context.Context, track *track.Track) err
 	var cover string
 	if rel.CoverArtArchive.Count != 0 {
 		var err error
-		cover, err = s.art.GetCoverArtFromMusicBrainzReleaseID(ctx, rel.Id)
+		cover, err = s.art.GetCoverArtFromMusicBrainzReleaseID(ctx, rel.ID)
 		if err != nil {
 			return err
 		}
 	} else {
 		var err error
-		cover, err = s.wiki.GetCoverArtFromMusicBrainzReleaseID(ctx, rel.Id)
+		cover, err = s.wiki.GetCoverArtFromMusicBrainzReleaseID(ctx, rel.ID)
 		if err != nil {
 			return err
 		}
 	}
 
 	if cover == "" {
-		return fmt.Errorf("unable to find cover art")
+		return errors.New("unable to find cover art")
 	}
 
 	data, err := s.art.FetchImage(ctx, cover)
@@ -157,10 +159,14 @@ func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
 	}
 	lyrics, err := s.lyrics.FindLyricsForTrack(ctx, title[0], artist[0], album[0])
 	if err != nil {
+		if errors.Is(err, lrclib.ErrNoLyricsFound) {
+			log.Logger(ctx).DebugContext(ctx, "No lyrics found")
+			return nil
+		}
 		return err
 	}
 
-	if lyrics == nil || lyrics.Instrumental {
+	if lyrics.Instrumental {
 		log.Logger(ctx).DebugContext(ctx, "No lyrics found")
 		return nil
 	}
@@ -175,16 +181,16 @@ func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
 		return nil
 	}
 
-	return fmt.Errorf("lyrics was empty")
+	return errors.New("lyrics was empty")
 }
 
 func (s *Scan) addGenreTag(ctx context.Context, track *track.Track) error {
-	albumId, ok := track.GetMusicBrainzAlbumID()
+	albumID, ok := track.GetMusicBrainzAlbumID()
 	if !ok {
 		return nil
 	}
 
-	rel, err := s.music.GetReleaseFromReleaseID(ctx, albumId[0])
+	rel, err := s.music.GetReleaseFromReleaseID(ctx, albumID[0])
 	if err != nil {
 		return err
 	}

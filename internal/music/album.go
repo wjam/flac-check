@@ -22,7 +22,7 @@ func (a album) getTag(name string) []string {
 	return util.Keys(values)
 }
 
-// Tags that should be consistent across tracks in an album
+// Tags that should be consistent across tracks in an album.
 func (a album) validateTags() []error {
 	var errs []error
 
@@ -35,14 +35,14 @@ func (a album) validateTags() []error {
 				// TODO between 2003 & 2008
 				continue
 			}
-			errs = append(errs, errors.ErrNotSingleTagValue{
+			errs = append(errs, errors.NotSingleTagValueError{
 				Tag:    tag,
 				Values: values,
 			})
 			continue
 		}
 		if slices.Contains(invalid, values[0]) {
-			errs = append(errs, errors.ErrInvalidValue{
+			errs = append(errs, errors.InvalidValueError{
 				Tag:    tag,
 				Values: values,
 			})
@@ -54,7 +54,7 @@ func (a album) validateTags() []error {
 	if len(artists) != 1 {
 		albumArtists := a.getTag("ALBUMARTIST")
 		if len(albumArtists) != 1 {
-			errs = append(errs, errors.ErrNotSingleAlbumArtist{
+			errs = append(errs, errors.NotSingleAlbumArtistError{
 				Artists:      artists,
 				AlbumArtists: albumArtists,
 			})
@@ -74,7 +74,7 @@ func (a album) validateConsistentGenre() error {
 	for _, t := range a {
 		other, _ := t.GetGenres()
 		if !slices.Equal(genres, other) {
-			return errors.ErrInvalidGenreTag{
+			return errors.InvalidGenreTagError{
 				Values: a.getTag("GENRE"),
 			}
 		}

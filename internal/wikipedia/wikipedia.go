@@ -31,26 +31,26 @@ func New(brainz *musicbrainz.Client, data *wikidata.Client, opts ...requests.Con
 	}
 }
 
-func (c Client) GetCoverArtFromMusicBrainzReleaseID(ctx context.Context, releaseId string) (string, error) {
-	release, err := c.brainz.GetReleaseFromReleaseID(ctx, releaseId)
+func (c Client) GetCoverArtFromMusicBrainzReleaseID(ctx context.Context, releaseID string) (string, error) {
+	release, err := c.brainz.GetReleaseFromReleaseID(ctx, releaseID)
 	if err != nil {
 		return "", err
 	}
 
-	group, err := c.brainz.GetReleaseGroupFromReleaseGroupID(ctx, release.ReleaseGroup.Id)
+	group, err := c.brainz.GetReleaseGroupFromReleaseGroupID(ctx, release.ReleaseGroup.ID)
 	if err != nil {
 		return "", err
 	}
 
-	wikiDataUrl := group.GetURLForType("wikidata")
-	if wikiDataUrl == "" {
+	wikiDataURL := group.GetURLForType("wikidata")
+	if wikiDataURL == "" {
 		return "", nil
 	}
 
-	wikiDataUrlParts := strings.Split(wikiDataUrl, "/")
-	wikiDataId := wikiDataUrlParts[len(wikiDataUrlParts)-1]
+	wikiDataURLParts := strings.Split(wikiDataURL, "/")
+	wikiDataID := wikiDataURLParts[len(wikiDataURLParts)-1]
 
-	data, err := c.data.GetLinksForItem(ctx, wikiDataId)
+	data, err := c.data.GetLinksForItem(ctx, wikiDataID)
 	if err != nil {
 		return "", err
 	}

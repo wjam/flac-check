@@ -14,13 +14,14 @@ import (
 	"golang.org/x/time/rate"
 )
 
-var cache = &cacheTripper{
-	parent: requests.LogTransport(&http.Transport{
-		MaxConnsPerHost: 2,
-	}, log.HTTP),
-}
+const musicBrainzConcurrentLimit = 2
 
 func TransportCache() requests.Config {
+	cache := &cacheTripper{
+		parent: requests.LogTransport(&http.Transport{
+			MaxConnsPerHost: musicBrainzConcurrentLimit,
+		}, log.HTTP),
+	}
 	return func(rb *requests.Builder) {
 		rb.Transport(cache)
 	}

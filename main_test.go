@@ -37,11 +37,11 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-artist-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "ARTIST",
 					Values: nil,
 				},
-				errors.ErrNotSingleAlbumArtist{
+				errors.NotSingleAlbumArtistError{
 					Artists:      nil,
 					AlbumArtists: nil,
 				},
@@ -50,7 +50,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-track-number-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "TRACKNUMBER",
 					Values: nil,
 				},
@@ -59,7 +59,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-track-total-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "TRACKTOTAL",
 					Values: nil,
 				},
@@ -68,7 +68,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-album-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "ALBUM",
 					Values: nil,
 				},
@@ -77,7 +77,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-title-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "TITLE",
 					Values: nil,
 				},
@@ -86,7 +86,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-artist-sort-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "ARTISTSORT",
 					Values: nil,
 				},
@@ -95,7 +95,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "mismatched-album-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "ALBUM",
 					Values: []string{"album1", "album2"},
 				},
@@ -104,7 +104,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "mismatched-date-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag:    "DATE",
 					Values: []string{"2024", "2024-01-01"},
 				},
@@ -113,7 +113,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "invalid-date-tag",
 			expectedErrs: []error{
-				errors.ErrInvalidValue{
+				errors.InvalidValueError{
 					Tag:    "DATE",
 					Values: []string{"0001-01-01"},
 				},
@@ -123,7 +123,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-albumartist-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleAlbumArtist{
+				errors.NotSingleAlbumArtistError{
 					Artists:      []string{"artist1", "artist1 and someone else"},
 					AlbumArtists: []string{"artist1", "artist2"},
 				},
@@ -132,7 +132,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-artist-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleAlbumArtist{
+				errors.NotSingleAlbumArtistError{
 					Artists: []string{"artist1", "artist1 and someone else"},
 				},
 			},
@@ -140,7 +140,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-picture-and-musicbrainz-tag",
 			expectedErrs: []error{
-				errors.ErrNotSingleTagValue{
+				errors.NotSingleTagValueError{
 					Tag: "MUSICBRAINZ_ALBUMID",
 				},
 			},
@@ -155,7 +155,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-genre-tag",
 			expectedErrs: []error{
-				errors.ErrInvalidGenreTag{
+				errors.InvalidGenreTagError{
 					Values: []string{"granite", "rock"},
 				},
 			},
@@ -163,7 +163,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-genre-tag-with-missing",
 			expectedErrs: []error{
-				errors.ErrInvalidGenreTag{
+				errors.InvalidGenreTagError{
 					Values: []string{"metal", "rock"},
 				},
 			},
@@ -180,8 +180,13 @@ func TestRoot(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			cmdContent, err := txtar.ParseFile(filepath.Join("testdata", "root", test.name, "cmd.txtar"))
+			require.NoError(t, err)
+			expectedContent, err := txtar.ParseFile(filepath.Join("testdata", "root", test.name, "expected.txtar"))
+			require.NoError(t, err)
+
 			dir := t.TempDir()
-			err := runMusicTest(t, dir, root(), filepath.Join("testdata", "root", test.name, "cmd.txtar"))
+			err = runMusicTest(t, dir, root(), cmdContent)
 
 			if len(test.expectedErrs) == 0 {
 				assert.NoError(t, err)
@@ -191,15 +196,12 @@ func TestRoot(t *testing.T) {
 				}
 			}
 
-			assertMusicContent(t, dir, filepath.Join("testdata", "root", test.name, "expected.txtar"))
+			assertMusicContent(t, dir, expectedContent)
 		})
 	}
 }
 
-func assertMusicContent(t *testing.T, dir, input string) {
-	test, err := txtar.ParseFile(input)
-	require.NoError(t, err)
-
+func assertMusicContent(t *testing.T, dir string, test *txtar.Archive) {
 	for _, file := range test.Files {
 		actual := readFlacFile(t, filepath.Join(dir, file.Name))
 		var expected flacFile
@@ -209,40 +211,8 @@ func assertMusicContent(t *testing.T, dir, input string) {
 	}
 }
 
-func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, input string) error {
-	test, err := txtar.ParseFile(input)
-	require.NoError(t, err)
-
-	serverRequests := map[string]map[request]string{}
-
-	for _, file := range test.Files {
-		match := requestPattern.FindStringSubmatch(file.Name)
-		if match == nil {
-			continue
-		}
-		if _, ok := serverRequests[match[2]]; !ok {
-			serverRequests[match[2]] = map[request]string{}
-		}
-
-		serverRequests[match[2]][request{
-			method: match[1],
-			path:   match[3],
-		}] = string(file.Data)
-	}
-
-	var replacements []string
-	for name, requests := range serverRequests {
-		s := httptest.NewServer(requestHandler{requests})
-		t.Cleanup(s.Close)
-		replacements = append(replacements, name, s.URL)
-	}
-	replacement := strings.NewReplacer(replacements...)
-
-	for _, requests := range serverRequests {
-		for k, data := range requests {
-			requests[k] = replacement.Replace(data)
-		}
-	}
+func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, test *txtar.Archive) error {
+	replacement := startMockHTTPServers(t, test)
 
 	var args []string
 	comment := strings.TrimSpace(string(test.Comment))
@@ -277,25 +247,54 @@ func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, input string) er
 		require.NoError(t, os.WriteFile(filepath.Join(dir, file.Name), data, 0644))
 	}
 
-	cwd, err := os.Getwd()
-	require.NoError(t, err)
-	defer func() {
-		assert.NoError(t, os.Chdir(cwd))
-	}()
-
-	assert.NoError(t, os.Chdir(dir))
+	t.Chdir(dir)
 
 	var stdout, stderr bytes.Buffer
 	cmd.SetArgs(args)
 	cmd.SetOut(&stdout)
 	cmd.SetErr(&stderr)
 
-	err = cmd.ExecuteContext(contextFromTesting(t))
+	err := cmd.ExecuteContext(contextFromTesting(t))
 
 	assert.Equal(t, expectedStdout, stdout.String())
 	assert.Equal(t, expectedStderr, stderr.String())
 
 	return err
+}
+
+func startMockHTTPServers(t *testing.T, test *txtar.Archive) *strings.Replacer {
+	serverRequests := map[string]map[request]string{}
+
+	for _, file := range test.Files {
+		match := requestPattern.FindStringSubmatch(file.Name)
+		if match == nil {
+			continue
+		}
+		if _, ok := serverRequests[match[2]]; !ok {
+			serverRequests[match[2]] = map[request]string{}
+		}
+
+		serverRequests[match[2]][request{
+			method: match[1],
+			path:   match[3],
+		}] = string(file.Data)
+	}
+
+	var replacements []string
+	for name, requests := range serverRequests {
+		s := httptest.NewServer(requestHandler{requests})
+		t.Cleanup(s.Close)
+		replacements = append(replacements, name, s.URL)
+	}
+	replacement := strings.NewReplacer(replacements...)
+
+	for _, requests := range serverRequests {
+		for k, data := range requests {
+			requests[k] = replacement.Replace(data)
+		}
+	}
+
+	return replacement
 }
 
 type request struct {
@@ -408,6 +407,12 @@ func extractPictures(t *testing.T, f *flac.File) []flacPicture {
 			pic, err := flacpicture.ParseFromMetaDataBlock(*meta)
 			require.NoError(t, err)
 
+			//nolint:exhaustive // only supporting picture types required for testing
+			pictureTypeToString := map[flacpicture.PictureType]string{
+				flacpicture.PictureTypeFrontCover: "cover",
+				flacpicture.PictureTypeBackCover:  "back",
+			}
+
 			picType, ok := pictureTypeToString[pic.PictureType]
 			require.Truef(t, ok, "Unexpected type %v", pic.PictureType)
 
@@ -421,15 +426,6 @@ func extractPictures(t *testing.T, f *flac.File) []flacPicture {
 	return pics
 }
 
-var stringToPictureType = map[string]flacpicture.PictureType{
-	"cover": flacpicture.PictureTypeFrontCover,
-	"back":  flacpicture.PictureTypeBackCover,
-}
-var pictureTypeToString = map[flacpicture.PictureType]string{
-	flacpicture.PictureTypeFrontCover: "cover",
-	flacpicture.PictureTypeBackCover:  "back",
-}
-
 func makeFlacFile(t *testing.T, file string, content []byte) {
 	var config flacFile
 	require.NoError(t, json.Unmarshal(content, &config))
@@ -438,6 +434,10 @@ func makeFlacFile(t *testing.T, file string, content []byte) {
 		buildFlacTags(t, config.Tags),
 	}
 	for _, p := range config.Pictures {
+		stringToPictureType := map[string]flacpicture.PictureType{
+			"cover": flacpicture.PictureTypeFrontCover,
+			"back":  flacpicture.PictureTypeBackCover,
+		}
 		picType, ok := stringToPictureType[p.Type]
 		if !ok {
 			t.Fatalf("unknown picture type: %s", p.Type)

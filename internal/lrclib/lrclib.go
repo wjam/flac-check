@@ -2,6 +2,8 @@ package lrclib
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/wjam/flac-check/internal/cache"
@@ -33,8 +35,8 @@ func (c Client) FindLyricsForTrack(ctx context.Context, track, artist, album str
 		Param("track_name", track).
 		ToJSON(&lyrics).
 		Fetch(ctx); err != nil {
-		if requests.HasStatusErr(err, 404) {
-			return nil, nil
+		if requests.HasStatusErr(err, http.StatusNotFound) {
+			return nil, ErrNoLyricsFound
 		}
 		return nil, err
 	}
@@ -47,3 +49,5 @@ type Lyrics struct {
 	PlainLyrics  string `json:"plainLyrics"`
 	SyncedLyrics string `json:"syncedLyrics"`
 }
+
+var ErrNoLyricsFound = errors.New("no lyrics found")

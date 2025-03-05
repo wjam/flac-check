@@ -24,39 +24,39 @@ type ScanOptions struct {
 	Parallelism          uint16
 
 	FetchLyrics        bool
-	CoverartBaseUrl    string
-	LrclibBaseUrl      string
-	MusicbrainzBaseUrl string
-	WikipediaBaseUrl   string
-	WikidataBaseUrl    string
+	CoverartBaseURL    string
+	LrclibBaseURL      string
+	MusicbrainzBaseURL string
+	WikipediaBaseURL   string
+	WikidataBaseURL    string
 }
 
 func (s ScanOptions) artClient() *coverart.Client {
 	return coverart.New(func(rb *requests.Builder) {
-		rb.BaseURL(s.CoverartBaseUrl)
+		rb.BaseURL(s.CoverartBaseURL)
 	})
 }
 
 func (s ScanOptions) lrcLibClient() *lrclib.Client {
 	return lrclib.New(func(rb *requests.Builder) {
-		rb.BaseURL(s.LrclibBaseUrl)
+		rb.BaseURL(s.LrclibBaseURL)
 	})
 }
 
 func (s ScanOptions) musicBrainzClient() *musicbrainz.Client {
 	return musicbrainz.New(func(rb *requests.Builder) {
-		rb.BaseURL(s.MusicbrainzBaseUrl)
+		rb.BaseURL(s.MusicbrainzBaseURL)
 	})
 }
 
 func (s ScanOptions) wikipediaClient(brainz *musicbrainz.Client, data *wikidata.Client) *wikipedia.Client {
 	return wikipedia.New(brainz, data, func(rb *requests.Builder) {
-		rb.BaseURL(s.WikipediaBaseUrl)
+		rb.BaseURL(s.WikipediaBaseURL)
 	})
 }
 func (s ScanOptions) wikidataClient() *wikidata.Client {
 	return wikidata.New(func(rb *requests.Builder) {
-		rb.BaseURL(s.WikidataBaseUrl)
+		rb.BaseURL(s.WikidataBaseURL)
 	})
 }
 
@@ -87,10 +87,8 @@ func NewScan(path string, opts ScanOptions) *Scan {
 func (s *Scan) Run(ctx context.Context) error {
 	group := pool.New().WithErrors().WithMaxGoroutines(int(s.opts.Parallelism)).WithContext(ctx)
 	for e, err := range util.WalkDirIter(s.path) {
-		e := e
-		err := err
 		if err != nil {
-			group.Go(func(ctx context.Context) error {
+			group.Go(func(context.Context) error {
 				return err
 			})
 			continue
@@ -102,7 +100,7 @@ func (s *Scan) Run(ctx context.Context) error {
 
 		entries, err := os.ReadDir(e.Path)
 		if err != nil {
-			group.Go(func(ctx context.Context) error {
+			group.Go(func(context.Context) error {
 				return err
 			})
 			continue

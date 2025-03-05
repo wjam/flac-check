@@ -67,7 +67,7 @@ func (c *Client) GetReleaseFromDiscID(ctx context.Context, discID string) (*Rele
 		ToJSON(&discs).
 		Fetch(ctx); err != nil {
 		if requests.HasStatusErr(err, http.StatusNotFound) {
-			return nil, nil
+			return nil, ErrNoReleaseFound
 		}
 		return nil, err
 	}
@@ -90,7 +90,11 @@ func (c *Client) GetReleaseFromDiscID(ctx context.Context, discID string) (*Rele
 			continue
 		}
 		if release.Media[0].Format != "CD" {
-			log.Logger(ctx).DebugContext(ctx, "Skipping release as incorrect media format", slog.String("format", release.Media[0].Format))
+			log.Logger(ctx).DebugContext(
+				ctx,
+				"Skipping release as incorrect media format",
+				slog.String("format", release.Media[0].Format),
+			)
 			continue
 		}
 		validReleases = append(validReleases, release)
@@ -107,7 +111,7 @@ type Release struct {
 	Status          string `json:"status"`
 	Date            string `json:"date"`
 	Title           string `json:"title"`
-	Id              string `json:"id"`
+	ID              string `json:"id"`
 	Quality         string `json:"quality"`
 	Country         string `json:"country"`
 	CoverArtArchive struct {
@@ -121,9 +125,9 @@ type Release struct {
 		Format string `json:"format"`
 	} `json:"media"`
 	ReleaseGroup struct {
-		Id     string `json:"id"`
+		ID     string `json:"id"`
 		Genres []struct {
-			Id   string `json:"id"`
+			ID   string `json:"id"`
 			Name string `json:"name"`
 		} `json:"genres"`
 	} `json:"release-group"`
@@ -131,9 +135,9 @@ type Release struct {
 
 type ReleaseGroup struct {
 	Relations []struct {
-		Url struct {
+		URL struct {
 			Resource string `json:"resource"`
-			Id       string `json:"id"`
+			ID       string `json:"id"`
 		} `json:"url"`
 		Type string `json:"type"`
 	} `json:"relations"`
@@ -145,8 +149,10 @@ func (g ReleaseGroup) GetURLForType(relType string) string {
 			continue
 		}
 
-		return rel.Url.Resource
+		return rel.URL.Resource
 	}
 
 	return ""
 }
+
+var ErrNoReleaseFound = errors.New("no release found")
