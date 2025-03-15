@@ -1,0 +1,81 @@
+# All tracks should have a TITLE tag
+--wikidata-baseurl http://unused.localhost:1234
+--wikipedia-baseurl http://unused.localhost:2345
+--coverart-baseurl http://unused.localhost:3456
+--lrclib-baseurl http://unused.localhost:4567
+--musicbrainz-baseurl http://unused.localhost:5678
+--parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1-disc1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "DISCNUMBER": ["1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- artist1/album1/track1-disc2.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "DISCNUMBER": ["3"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- artist1/album1/track1-disc3.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "DISCNUMBER": ["5"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+Error: album artist1/album1: album disc number 2 is missing
+album disc number 4 is missing

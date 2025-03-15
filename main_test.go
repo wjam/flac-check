@@ -176,6 +176,67 @@ func TestRoot(t *testing.T) {
 		{name: "missing-musicbrainz-albumid-skipped"},
 		{name: "replace-unknown-genre-tag"},
 		{name: "remove-unknown-genre-tag"},
+		{
+			name: "missing-disc-number",
+			expectedErrs: []error{
+				errors.NotSingleTagValueError{
+					Tag:    "DISCNUMBER",
+					Values: nil,
+				},
+			},
+		},
+		{
+			name: "disc-number-not-a-number",
+			expectedErrs: []error{
+				errors.InvalidIntTagError{
+					Tag:    "DISCNUMBER",
+					Values: []string{"not-a-number"},
+				},
+			},
+		},
+		{
+			name: "disc-number-multiple-values",
+			expectedErrs: []error{
+				errors.NotSingleTagValueError{
+					Tag:    "DISCNUMBER",
+					Values: []string{"1", "2"},
+				},
+			},
+		},
+		{
+			name: "disc-number-invalid-start",
+			expectedErrs: []error{
+				errors.InvalidStartingDiscNumberError{
+					Lowest: 2,
+				},
+			},
+		},
+		{
+			name: "disc-number-missing-numbers",
+			expectedErrs: []error{
+				errors.MissingDiscNumberError{DiscNumber: 2},
+				errors.MissingDiscNumberError{DiscNumber: 4},
+			},
+		},
+		{
+			name: "track-number-not-a-number",
+			expectedErrs: []error{
+				errors.InvalidIntTagError{
+					Tag:    "TRACKNUMBER",
+					Values: []string{"not-a-number"},
+				},
+			},
+		},
+		{
+			name: "track-number-collision",
+			expectedErrs: []error{
+				errors.DiscTrackNumberCollisionError{
+					DiscNumber:  1,
+					TrackNumber: 1,
+					Count:       2,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -212,11 +273,11 @@ func assertMusicContent(t *testing.T, dir string, test *txtar.Archive) {
 }
 
 func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, test *txtar.Archive) error {
-	replacement := startMockHTTPServers(t, test)
+	serverBaseURLs := startMockHTTPServers(t, test)
 
 	var args []string
 	comment := strings.TrimSpace(string(test.Comment))
-	comment = replacement.Replace(comment)
+	comment = serverBaseURLs.Replace(comment)
 	for _, l := range strings.Split(comment, "\n") {
 		if !strings.HasPrefix(l, "#") {
 			args = append(args, strings.Split(l, " ")...)
@@ -225,13 +286,13 @@ func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, test *txtar.Arch
 
 	var expectedStdout, expectedStderr string
 	for _, file := range test.Files {
-		data := []byte(replacement.Replace(string(file.Data)))
+		data := serverBaseURLs.Replace(string(file.Data))
 		if file.Name == "stdout" {
-			expectedStdout = string(data)
+			expectedStdout = data
 			continue
 		}
 		if file.Name == "stderr" {
-			expectedStderr = string(data)
+			expectedStderr = data
 			continue
 		}
 
@@ -240,11 +301,11 @@ func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, test *txtar.Arch
 		}
 
 		if strings.HasSuffix(file.Name, ".flac") {
-			makeFlacFile(t, filepath.Join(dir, file.Name), data)
+			makeFlacFile(t, filepath.Join(dir, file.Name), []byte(data))
 			continue
 		}
 
-		require.NoError(t, os.WriteFile(filepath.Join(dir, file.Name), data, 0644))
+		require.NoError(t, os.WriteFile(filepath.Join(dir, file.Name), []byte(data), 0644))
 	}
 
 	t.Chdir(dir)

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/go-flac/flacpicture/v2"
@@ -151,6 +152,14 @@ func (t *Track) GetGenres() ([]string, bool) {
 	return t.TagOk("GENRE")
 }
 
+func (t *Track) GetDiscNumber() ([]string, bool) {
+	return t.TagOk("DISCNUMBER")
+}
+
+func (t *Track) GetTrackNumber() ([]string, bool) {
+	return t.TagOk("TRACKNUMBER")
+}
+
 func (t *Track) GetMusicBrainzDiscID() ([]string, bool) {
 	return t.TagOk("MUSICBRAINZ_DISCID")
 }
@@ -204,6 +213,7 @@ func (t *Track) validateExpectedTags() []error {
 		"TITLE",
 		"ARTISTSORT",
 		"MUSICBRAINZ_ALBUMID",
+		"DISCNUMBER",
 	} {
 		if values := t.Tag(tag); len(values) != 1 {
 			if tag == "MUSICBRAINZ_ALBUMID" &&
@@ -216,6 +226,30 @@ func (t *Track) validateExpectedTags() []error {
 			errs = append(errs, errors2.NotSingleTagValueError{
 				Tag:    tag,
 				Values: values,
+			})
+		}
+	}
+
+	errs = append(errs, t.validateTagIsInt("DISCNUMBER")...)
+	errs = append(errs, t.validateTagIsInt("TRACKNUMBER")...)
+
+	return errs
+}
+
+func (t *Track) validateTagIsInt(tag string) []error {
+	var errs []error
+	if vees, ok := t.TagOk(tag); ok {
+		var invalid []string
+		for _, v := range vees {
+			if _, err := strconv.Atoi(v); err != nil {
+				invalid = append(invalid, v)
+			}
+		}
+
+		if len(invalid) > 0 {
+			errs = append(errs, errors2.InvalidIntTagError{
+				Tag:    tag,
+				Values: invalid,
 			})
 		}
 	}

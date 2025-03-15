@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"math"
+	"os"
 	"os/signal"
 	"runtime"
 
@@ -18,12 +19,17 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		// cobra will print out the error
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), shutdownSignals()...)
 	defer cancel()
 
-	if err := root().ExecuteContext(ctx); err != nil {
-		panic(err)
-	}
+	return root().ExecuteContext(ctx)
 }
 
 func root() *cobra.Command {

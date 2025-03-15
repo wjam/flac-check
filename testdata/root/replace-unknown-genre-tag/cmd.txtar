@@ -9,6 +9,7 @@
     "LYRICS": ["existing lyrics"],
     "ALBUM": ["album1"],
     "TITLE": ["track1"],
+    "DISCNUMBER": ["1"],
     "TRACKNUMBER": ["1"],
     "TRACKTOTAL": ["1"],
     "DATE": ["2024"],

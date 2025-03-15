@@ -75,6 +75,85 @@ func (e InvalidValueError) Is(err error) bool {
 	return e.Tag == e2.Tag && slices.Equal(e.Values, e2.Values)
 }
 
+var _ error = InvalidIntTagError{}
+
+type InvalidIntTagError struct {
+	Tag    string
+	Values []string
+}
+
+func (e InvalidIntTagError) Error() string {
+	return fmt.Sprintf(
+		"expected integer value for %q, got %s",
+		e.Tag,
+		join(e.Values),
+	)
+}
+
+func (e InvalidIntTagError) Is(err error) bool {
+	e2, ok := err.(InvalidIntTagError)
+	if !ok {
+		return false
+	}
+	return e.Tag == e2.Tag && slices.Equal(e.Values, e2.Values)
+}
+
+var _ error = InvalidStartingDiscNumberError{}
+
+type InvalidStartingDiscNumberError struct {
+	Lowest int
+}
+
+func (e InvalidStartingDiscNumberError) Error() string {
+	return fmt.Sprintf("album disc number must start at either 0 or 1 rather than %d", e.Lowest)
+}
+
+func (e InvalidStartingDiscNumberError) Is(err error) bool {
+	e2, ok := err.(InvalidStartingDiscNumberError)
+	if !ok {
+		return false
+	}
+	return e.Lowest == e2.Lowest
+}
+
+var _ error = MissingDiscNumberError{}
+
+type MissingDiscNumberError struct {
+	DiscNumber int
+}
+
+func (e MissingDiscNumberError) Error() string {
+	return fmt.Sprintf("album disc number %d is missing", e.DiscNumber)
+}
+
+func (e MissingDiscNumberError) Is(err error) bool {
+	e2, ok := err.(MissingDiscNumberError)
+	if !ok {
+		return false
+	}
+	return e.DiscNumber == e2.DiscNumber
+}
+
+var _ error = DiscTrackNumberCollisionError{}
+
+type DiscTrackNumberCollisionError struct {
+	DiscNumber  int
+	TrackNumber int
+	Count       int
+}
+
+func (e DiscTrackNumberCollisionError) Error() string {
+	return fmt.Sprintf("expected 1 track for disc %d track %d but found %d", e.DiscNumber, e.TrackNumber, e.Count)
+}
+
+func (e DiscTrackNumberCollisionError) Is(err error) bool {
+	e2, ok := err.(DiscTrackNumberCollisionError)
+	if !ok {
+		return false
+	}
+	return e.DiscNumber == e2.DiscNumber && e.TrackNumber == e2.TrackNumber && e.Count == e2.Count
+}
+
 var _ error = InvalidGenreTagError{}
 
 type InvalidGenreTagError struct {

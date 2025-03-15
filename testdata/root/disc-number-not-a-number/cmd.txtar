@@ -1,0 +1,20 @@
+# All tracks should have a TITLE tag
+--wikidata-baseurl http://unused.localhost:1234 --wikipedia-baseurl http://unused.localhost:1234 --coverart-baseurl http://unused.localhost:1234 --lrclib-baseurl http://unused.localhost:1234 --musicbrainz-baseurl http://unused.localhost:1234 --parallelism 1 --remove-log-attr time --remove-log-attr duration --log-level debug .
+-- artist1/album1/track1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTISTSORT": ["artist1"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "DISCNUMBER": ["not-a-number"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["1"],
+    "DATE": ["2024"]
+  }
+}
+-- stdout --
+-- stderr --
+level=DEBUG msg="Processing album" path=artist1/album1
+Error: album artist1/album1: failed to handle track track1.flac: expected integer value for "DISCNUMBER", got not-a-number
