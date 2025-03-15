@@ -145,7 +145,6 @@ func TestRoot(t *testing.T) {
 				},
 			},
 		},
-		{name: "missing-date-tag-skipped"},
 		{name: "international-lyrics-for-non-international-artist"},
 		{name: "international-lyrics-for-international-artist"},
 		{name: "funky-lyric-chars-dropped"},

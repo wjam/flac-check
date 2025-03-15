@@ -31,12 +31,6 @@ func (a album) validateTags() []error {
 	for tag, invalid := range map[string][]string{"ALBUM": {""}, "DATE": {"", "0001-01-01"}} {
 		values := a.getTag(tag)
 		if len(values) != 1 {
-			if tag == "DATE" &&
-				slices.Contains(a[0].Tag("ARTIST"), "King Size Slim") &&
-				slices.Contains(a[0].Tag("ALBUM"), "Only My Good Self to Blame") {
-				// TODO between 2003 & 2008
-				continue
-			}
 			errs = append(errs, errors.NotSingleTagValueError{
 				Tag:    tag,
 				Values: values,
