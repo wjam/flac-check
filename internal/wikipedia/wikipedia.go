@@ -4,10 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/carlmjohnson/requests"
 	"github.com/wjam/flac-check/internal/cache"
 	"github.com/wjam/flac-check/internal/musicbrainz"
 	"github.com/wjam/flac-check/internal/wikidata"
+
+	"github.com/carlmjohnson/requests"
 )
 
 type Client struct {

@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"runtime"
 
-	"github.com/spf13/cobra"
 	"github.com/wjam/flac-check/internal/coverart"
 	"github.com/wjam/flac-check/internal/log"
 	"github.com/wjam/flac-check/internal/lrclib"
@@ -16,6 +15,8 @@ import (
 	"github.com/wjam/flac-check/internal/musicbrainz"
 	"github.com/wjam/flac-check/internal/wikidata"
 	"github.com/wjam/flac-check/internal/wikipedia"
+
+	"github.com/spf13/cobra"
 )
 
 func main() {

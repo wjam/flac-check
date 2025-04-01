@@ -14,12 +14,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-flac/flacpicture/v2"
-	"github.com/go-flac/flacvorbis/v2"
-	"github.com/go-flac/go-flac/v2"
 	errors2 "github.com/wjam/flac-check/internal/errors"
 	"github.com/wjam/flac-check/internal/log"
 	"github.com/wjam/flac-check/internal/util"
+
+	"github.com/go-flac/flacpicture/v2"
+	"github.com/go-flac/flacvorbis/v2"
+	"github.com/go-flac/go-flac/v2"
 	"golang.org/x/text/encoding/charmap"
 )
 

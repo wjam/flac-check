@@ -16,14 +16,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/util"
+
 	"github.com/go-flac/flacpicture/v2"
 	"github.com/go-flac/flacvorbis/v2"
 	"github.com/go-flac/go-flac/v2"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/wjam/flac-check/internal/errors"
-	"github.com/wjam/flac-check/internal/util"
 	"golang.org/x/tools/txtar"
 )
 

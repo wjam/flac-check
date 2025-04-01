@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/wjam/flac-check/internal/log"
 	"golang.org/x/time/rate"
+
+	"github.com/wjam/flac-check/internal/log"
 )
 
 func TransportCache() requests.Config {

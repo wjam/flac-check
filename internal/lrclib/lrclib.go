@@ -5,8 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/carlmjohnson/requests"
 	"github.com/wjam/flac-check/internal/cache"
+
+	"github.com/carlmjohnson/requests"
 )
 
 type Client struct {

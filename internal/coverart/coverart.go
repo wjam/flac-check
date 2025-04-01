@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/carlmjohnson/requests"
 	"github.com/wjam/flac-check/internal/cache"
+
+	"github.com/carlmjohnson/requests"
 )
 
 type Client struct {

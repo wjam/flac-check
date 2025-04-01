@@ -8,9 +8,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/carlmjohnson/requests"
 	"github.com/wjam/flac-check/internal/cache"
 	"github.com/wjam/flac-check/internal/log"
+
+	"github.com/carlmjohnson/requests"
 )
 
 type Client struct {
@@ -82,7 +83,11 @@ func (c *Client) GetReleaseFromDiscID(ctx context.Context, discID string) (*Rele
 	var validReleases []Release
 	for _, release := range discs.Releases {
 		if release.Country != "XE" && release.Country != "XW" && release.Country != "GB" {
-			log.Logger(ctx).DebugContext(ctx, "Skipping release as incorrect country", slog.String("country", release.Country))
+			log.Logger(ctx).DebugContext(
+				ctx,
+				"Skipping release as incorrect country",
+				slog.String("country", release.Country),
+			)
 			continue
 		}
 		if len(release.Media) != 1 {

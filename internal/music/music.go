@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/carlmjohnson/requests"
-	"github.com/sourcegraph/conc/pool"
 	"github.com/wjam/flac-check/internal/coverart"
 	"github.com/wjam/flac-check/internal/lrclib"
 	"github.com/wjam/flac-check/internal/music/track"
@@ -16,6 +14,9 @@ import (
 	"github.com/wjam/flac-check/internal/util"
 	"github.com/wjam/flac-check/internal/wikidata"
 	"github.com/wjam/flac-check/internal/wikipedia"
+
+	"github.com/carlmjohnson/requests"
+	"github.com/sourcegraph/conc/pool"
 )
 
 type ScanOptions struct {
