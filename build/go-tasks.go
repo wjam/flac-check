@@ -23,7 +23,14 @@ var goTest = goyek.Define(goyek.Task{
 	Action: func(a *goyek.A) {
 		out := filepath.Join("bin", "coverage.out")
 		html := filepath.Join("bin", "coverage.html")
-		if !cmd.Exec(a, fmt.Sprintf("go test -race -covermode=atomic -coverprofile=%q -coverpkg=./... ./...", out)) {
+		var pkgs strings.Builder
+		if !cmd.Exec(a, "go list -f '{{ .ImportPath }}' ./...", cmd.Stdout(&pkgs)) {
+			return
+		}
+		packages := strings.Join(append(strings.Split(strings.TrimSpace(pkgs.String()), "\n"), "."), ",")
+		if !cmd.Exec(a,
+			fmt.Sprintf("go test -race -covermode=atomic -coverprofile=%q -coverpkg=%q ./...", out, packages),
+		) {
 			return
 		}
 		cmd.Exec(a, fmt.Sprintf("go tool cover -html=%q -o %q", out, html))
