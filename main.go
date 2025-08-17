@@ -74,6 +74,8 @@ func root() *cobra.Command {
 		"number of albums to process in parallel",
 	)
 
+	// Flags to aid testing
+
 	const (
 		coverartBaseURL    = "coverart-baseurl"
 		lrclibBaseURL      = "lrclib-baseurl"
