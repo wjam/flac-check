@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -42,8 +43,7 @@ func Logger(ctx context.Context) *slog.Logger {
 var _ slog.Handler = WithAttrsFromContextHandler{}
 
 type WithAttrsFromContextHandler struct {
-	Parent            slog.Handler
-	IgnoredAttributes []string
+	Parent slog.Handler
 }
 
 func (w WithAttrsFromContextHandler) Enabled(ctx context.Context, level slog.Level) bool {
@@ -55,22 +55,7 @@ func (w WithAttrsFromContextHandler) Handle(ctx context.Context, record slog.Rec
 		record.AddAttrs(v.([]slog.Attr)...)
 	}
 
-	newRecord := slog.NewRecord(record.Time, record.Level, record.Message, record.PC)
-
-	if slices.Contains(w.IgnoredAttributes, "time") {
-		newRecord.Time = time.Time{}
-	}
-
-	record.Attrs(func(a slog.Attr) bool {
-		if slices.Contains(w.IgnoredAttributes, a.Key) {
-			return true
-		}
-
-		newRecord.AddAttrs(a)
-		return true
-	})
-
-	return w.Parent.Handle(ctx, newRecord)
+	return w.Parent.Handle(ctx, record)
 }
 
 func (w WithAttrsFromContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
@@ -79,4 +64,14 @@ func (w WithAttrsFromContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 
 func (w WithAttrsFromContextHandler) WithGroup(name string) slog.Handler {
 	return w.Parent.WithGroup(name)
+}
+
+func FilterAttributesFromLog(ignored []string) func(groups []string, a slog.Attr) slog.Attr {
+	return func(groups []string, a slog.Attr) slog.Attr {
+		key := strings.Join(append(groups, a.Key), ".")
+		if slices.Contains(ignored, key) {
+			return slog.Attr{}
+		}
+		return a
+	}
 }

@@ -46,8 +46,10 @@ func root() *cobra.Command {
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			ctx := log.ContextWithLogger(cmd.Context(), slog.New(log.WithAttrsFromContextHandler{
-				Parent:            slog.NewTextHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{Level: logLevel.level}),
-				IgnoredAttributes: removeLogAttrs,
+				Parent: slog.NewTextHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{
+					Level:       logLevel.level,
+					ReplaceAttr: log.FilterAttributesFromLog(removeLogAttrs),
+				}),
 			}))
 
 			cmd.SetContext(ctx)
@@ -59,19 +61,7 @@ func root() *cobra.Command {
 		},
 	}
 
-	const (
-		removeLogAttr = "remove-log-attr"
-	)
-	cmd.Flags().StringSliceVar(
-		&removeLogAttrs,
-		removeLogAttr,
-		[]string{},
-		"Remove log attributes from the output - for testing purposes",
-	)
 	cmd.Flags().Var(logLevel, "log-level", "Level to log at")
-	if err := cmd.Flags().MarkHidden(removeLogAttr); err != nil {
-		panic(err)
-	}
 
 	cmd.Flags().BoolVar(&opts.FetchLyrics, "fetch-lyrics", true, "whether to fetch missing lyrics")
 	cmd.Flags().BoolVar(&opts.Write, "write", false, "write changes to disc rather than log them")
@@ -90,16 +80,18 @@ func root() *cobra.Command {
 		musicbrainzBaseURL = "musicbrainz-baseurl"
 		wikipediaBaseURL   = "wikipedia-baseurl"
 		wikidataBaseURL    = "wikidata-baseurl"
+		removeLogAttr      = "remove-log-attr"
 	)
 	cmd.Flags().StringVar(&opts.CoverartBaseURL, coverartBaseURL, coverart.BaseURL, "")
 	cmd.Flags().StringVar(&opts.LrclibBaseURL, lrclibBaseURL, lrclib.BaseURL, "")
 	cmd.Flags().StringVar(&opts.MusicbrainzBaseURL, musicbrainzBaseURL, musicbrainz.BaseURL, "")
 	cmd.Flags().StringVar(&opts.WikipediaBaseURL, wikipediaBaseURL, wikipedia.BaseURL, "")
 	cmd.Flags().StringVar(&opts.WikidataBaseURL, wikidataBaseURL, wikidata.BaseURL, "")
+	cmd.Flags().StringSliceVar(&removeLogAttrs, removeLogAttr, []string{}, "")
 
 	for _, s := range []string{
 		coverartBaseURL, lrclibBaseURL, musicbrainzBaseURL, lrclibBaseURL,
-		musicbrainzBaseURL, wikipediaBaseURL, wikidataBaseURL,
+		musicbrainzBaseURL, wikipediaBaseURL, wikidataBaseURL, removeLogAttr,
 	} {
 		if err := cmd.Flags().MarkHidden(s); err != nil {
 			panic(err)
