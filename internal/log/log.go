@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"slices"
 	"strings"
 	"time"
 )
@@ -67,10 +66,17 @@ func (w WithAttrsFromContextHandler) WithGroup(name string) slog.Handler {
 }
 
 func FilterAttributesFromLog(ignored []string) func(groups []string, a slog.Attr) slog.Attr {
+	lookup := make(map[string]struct{}, len(ignored))
+	for _, s := range ignored {
+		lookup[s] = struct{}{}
+	}
 	return func(groups []string, a slog.Attr) slog.Attr {
-		key := strings.Join(append(groups, a.Key), ".")
-		if slices.Contains(ignored, key) {
-			return slog.Attr{}
+		parts := append(groups, a.Key) //nolint:gocritic // two slices are semantically different
+		for i := 1; i <= len(parts); i++ {
+			key := strings.Join(parts[:i], ".")
+			if _, ok := lookup[key]; ok {
+				return slog.Attr{}
+			}
 		}
 		return a
 	}
