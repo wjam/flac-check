@@ -118,8 +118,50 @@ func (a album) validateDiscNumbers() []error {
 }
 
 func (a album) validateTrackNumbers(silenceTracks map[string][]int) []error {
-	discTracks := map[int]map[int]int{}
+	discTracks := a.readDiscTrackNumberCounts()
 
+	var albumName string
+	if v, ok := a[0].TagOk("ALBUM"); ok {
+		albumName = v[0]
+	}
+	var artist string
+	if v, ok := a[0].TagOk("ALBUMARTIST"); ok {
+		artist = v[0]
+	} else if v, ok := a[0].TagOk("ARTIST"); ok {
+		artist = v[0]
+	}
+
+	silenceTracksForAlbum := silenceTracks[fmt.Sprintf("%s/%s", artist, albumName)]
+
+	var errs []error
+	for disk, tracks := range discTracks {
+		lowest := 1
+		highest := math.MinInt32
+		for trackNumber, count := range tracks {
+			if count > 1 {
+				errs = append(errs, errors.DiscTrackNumberCollisionError{
+					DiscNumber:  disk,
+					TrackNumber: trackNumber,
+					Count:       count,
+				})
+			}
+			if trackNumber > highest {
+				highest = trackNumber
+			}
+		}
+
+		for i := lowest; i <= highest; i++ {
+			if _, ok := tracks[i]; !ok && !slices.Contains(silenceTracksForAlbum, i) {
+				errs = append(errs, errors.MissingTrackNumberError{TrackNumber: i})
+			}
+		}
+	}
+
+	return errs
+}
+
+func (a album) readDiscTrackNumberCounts() map[int]map[int]int {
+	discTracks := map[int]map[int]int{}
 	for _, t := range a {
 		vees, ok := t.GetDiscNumber()
 		if !ok {
@@ -144,46 +186,7 @@ func (a album) validateTrackNumbers(silenceTracks map[string][]int) []error {
 		}
 		discTracks[disc][trackNumber]++
 	}
-
-	var albumName string
-	if v, ok := a[0].TagOk("ALBUM"); ok {
-		albumName = v[0]
-	}
-	var artist string
-	if v, ok := a[0].TagOk("ALBUMARTIST"); ok {
-		artist = v[0]
-	} else if v, ok := a[0].TagOk("ARTIST"); ok {
-		artist = v[0]
-	}
-
-	var errs []error
-	for disk, tracks := range discTracks {
-		lowest := 1
-		highest := math.MinInt32
-		for trackNumber, count := range tracks {
-			if count > 1 {
-				errs = append(errs, errors.DiscTrackNumberCollisionError{
-					DiscNumber:  disk,
-					TrackNumber: trackNumber,
-					Count:       count,
-				})
-			}
-			if trackNumber > highest {
-				highest = trackNumber
-			}
-		}
-
-		for i := lowest; i <= highest; i++ {
-			if _, ok := tracks[i]; !ok {
-				if v := silenceTracks[fmt.Sprintf("%s/%s", artist, albumName)]; slices.Contains(v, i) {
-					continue
-				}
-				errs = append(errs, errors.MissingTrackNumberError{TrackNumber: i})
-			}
-		}
-	}
-
-	return errs
+	return discTracks
 }
 
 func (a album) validateConsistentGenre() error {

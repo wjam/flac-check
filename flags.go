@@ -63,8 +63,9 @@ func (s *stringToIntSliceFlag) String() string {
 }
 
 func (s *stringToIntSliceFlag) Set(val string) error {
-	parts := strings.SplitN(val, "=", 2)
-	if len(parts) != 2 {
+	const keyValuePairLength = 2
+	parts := strings.SplitN(val, "=", keyValuePairLength)
+	if len(parts) != keyValuePairLength {
 		return fmt.Errorf("invalid value %q", val)
 	}
 
