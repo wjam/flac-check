@@ -37,7 +37,7 @@ func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry
 		}
 	}
 
-	errs = append(errs, album.validateTags()...)
+	errs = append(errs, album.validateTags(s.opts.SilenceAlbumTracks)...)
 
 	if len(errs) > 0 {
 		return errors.Join(errs...)

@@ -115,8 +115,9 @@ func TestRoot(t *testing.T) {
 			name: "invalid-date-tag",
 			expectedErrs: []error{
 				errors.InvalidValueError{
-					Tag:    "DATE",
-					Values: []string{"0001-01-01"},
+					Tag:         "DATE",
+					Values:      []string{"0001-01-01"},
+					Expectation: "valid",
 				},
 			},
 		},
@@ -237,6 +238,36 @@ func TestRoot(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "multiple-musicbrainz-albumid-not-allowed",
+			expectedErrs: []error{
+				errors.InvalidValueError{
+					Tag:         "MUSICBRAINZ_ALBUMID",
+					Values:      []string{"ID1", "ID2"},
+					Expectation: "single",
+				},
+			},
+		},
+		{
+			name: "album-with-missing-tracks",
+			expectedErrs: []error{
+				errors.MissingTrackNumberError{
+					TrackNumber: 2,
+					Disc:        0,
+				},
+			},
+		},
+		{
+			name: "album-tracks-not-starting-at-1",
+			expectedErrs: []error{
+				errors.MissingTrackNumberError{
+					TrackNumber: 1,
+					Disc:        0,
+				},
+			},
+		},
+		{name: "album-missing-tracks-ignore-silence"},
+		{name: "album-with-silence-tracks-supports-ALBUMARTIST"},
 	}
 
 	for _, test := range tests {
@@ -313,7 +344,7 @@ func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, test *txtar.Arch
 	var stdout, stderr bytes.Buffer
 	cmd.SetArgs(args)
 	cmd.SetOut(&stdout)
-	cmd.SetErr(&stderr)
+	cmd.SetErr(io.MultiWriter(&stderr, t.Output()))
 
 	err := cmd.ExecuteContext(contextFromTesting(t))
 

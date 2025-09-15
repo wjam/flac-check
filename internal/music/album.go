@@ -1,6 +1,7 @@
 package music
 
 import (
+	"fmt"
 	"math"
 	"slices"
 	"strconv"
@@ -25,7 +26,7 @@ func (a album) getTag(name string) []string {
 }
 
 // Tags that should be consistent across tracks in an album.
-func (a album) validateTags() []error {
+func (a album) validateTags(silenceTracks map[string][]int) []error {
 	var errs []error
 
 	for tag, invalid := range map[string][]string{"ALBUM": {""}, "DATE": {"", "0001-01-01"}} {
@@ -39,8 +40,9 @@ func (a album) validateTags() []error {
 		}
 		if slices.Contains(invalid, values[0]) {
 			errs = append(errs, errors.InvalidValueError{
-				Tag:    tag,
-				Values: values,
+				Tag:         tag,
+				Values:      values,
+				Expectation: "valid",
 			})
 		}
 	}
@@ -61,8 +63,12 @@ func (a album) validateTags() []error {
 		errs = append(errs, err)
 	}
 
+	if err := a.validateMusicBrainzTags(); err != nil {
+		errs = append(errs, err)
+	}
+
 	errs = append(errs, a.validateDiscNumbers()...)
-	errs = append(errs, a.validateTrackNumbers()...)
+	errs = append(errs, a.validateTrackNumbers(silenceTracks)...)
 
 	return errs
 }
@@ -111,7 +117,7 @@ func (a album) validateDiscNumbers() []error {
 	return errs
 }
 
-func (a album) validateTrackNumbers() []error {
+func (a album) validateTrackNumbers(silenceTracks map[string][]int) []error {
 	discTracks := map[int]map[int]int{}
 
 	for _, t := range a {
@@ -139,9 +145,21 @@ func (a album) validateTrackNumbers() []error {
 		discTracks[disc][trackNumber]++
 	}
 
-	var errs []error
+	var albumName string
+	if v, ok := a[0].TagOk("ALBUM"); ok {
+		albumName = v[0]
+	}
+	var artist string
+	if v, ok := a[0].TagOk("ALBUMARTIST"); ok {
+		artist = v[0]
+	} else if v, ok := a[0].TagOk("ARTIST"); ok {
+		artist = v[0]
+	}
 
+	var errs []error
 	for disk, tracks := range discTracks {
+		lowest := 1
+		highest := math.MinInt32
 		for trackNumber, count := range tracks {
 			if count > 1 {
 				errs = append(errs, errors.DiscTrackNumberCollisionError{
@@ -149,6 +167,18 @@ func (a album) validateTrackNumbers() []error {
 					TrackNumber: trackNumber,
 					Count:       count,
 				})
+			}
+			if trackNumber > highest {
+				highest = trackNumber
+			}
+		}
+
+		for i := lowest; i <= highest; i++ {
+			if _, ok := tracks[i]; !ok {
+				if v := silenceTracks[fmt.Sprintf("%s/%s", artist, albumName)]; slices.Contains(v, i) {
+					continue
+				}
+				errs = append(errs, errors.MissingTrackNumberError{TrackNumber: i})
 			}
 		}
 	}
@@ -165,6 +195,31 @@ func (a album) validateConsistentGenre() error {
 			return errors.InvalidGenreTagError{
 				Values: a.getTag("GENRE"),
 			}
+		}
+	}
+
+	return nil
+}
+
+func (a album) validateMusicBrainzTags() error {
+	albums := map[string]struct{}{}
+
+	for _, t := range a {
+		v, ok := t.GetMusicBrainzAlbumID()
+		if !ok {
+			continue
+		}
+
+		for _, s := range v {
+			albums[s] = struct{}{}
+		}
+	}
+
+	if len(albums) > 1 {
+		return errors.InvalidValueError{
+			Tag:         "MUSICBRAINZ_ALBUMID",
+			Values:      util.Keys(albums),
+			Expectation: "single",
 		}
 	}
 

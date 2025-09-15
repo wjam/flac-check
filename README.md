@@ -13,3 +13,5 @@ Tool for maintaining my music FLAC files:
 ## NOTES
 
 * Lyric file format - https://en.wikipedia.org/wiki/LRC_(file_format)
+* MusicBrainz API - https://musicbrainz.org/doc/MusicBrainz_API
+* Tagging best practices - https://www.navidrome.org/docs/usage/tagging-guidelines/

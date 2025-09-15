@@ -55,13 +55,15 @@ func (e NotSingleTagValueError) Is(err error) bool {
 var _ error = InvalidValueError{}
 
 type InvalidValueError struct {
-	Tag    string
-	Values []string
+	Tag         string
+	Values      []string
+	Expectation string
 }
 
 func (e InvalidValueError) Error() string {
 	return fmt.Sprintf(
-		"expected valid value for %q, got %s",
+		"expected %s value for %q, got %s",
+		e.Expectation,
 		e.Tag,
 		join(e.Values),
 	)
@@ -134,6 +136,44 @@ func (e MissingDiscNumberError) Is(err error) bool {
 	return e.DiscNumber == e2.DiscNumber
 }
 
+var _ error = InvalidStartingTrackNumberError{}
+
+type InvalidStartingTrackNumberError struct {
+	Lowest int
+	Disc   int
+}
+
+func (e InvalidStartingTrackNumberError) Error() string {
+	return fmt.Sprintf("track number for disc %d must start at 1 rather than %d", e.Disc, e.Lowest)
+}
+
+func (e InvalidStartingTrackNumberError) Is(err error) bool {
+	e2, ok := err.(InvalidStartingTrackNumberError)
+	if !ok {
+		return false
+	}
+	return e.Lowest == e2.Lowest && e.Disc == e2.Disc
+}
+
+var _ error = MissingTrackNumberError{}
+
+type MissingTrackNumberError struct {
+	TrackNumber int
+	Disc        int
+}
+
+func (e MissingTrackNumberError) Error() string {
+	return fmt.Sprintf("track number %d for disc %d is missing", e.TrackNumber, e.Disc)
+}
+
+func (e MissingTrackNumberError) Is(err error) bool {
+	e2, ok := err.(MissingTrackNumberError)
+	if !ok {
+		return false
+	}
+	return e.TrackNumber == e2.TrackNumber && e.Disc == e2.Disc
+}
+
 var _ error = DiscTrackNumberCollisionError{}
 
 type DiscTrackNumberCollisionError struct {
@@ -185,7 +225,7 @@ type InvalidTagValueError struct {
 
 func (e InvalidTagValueError) Error() string {
 	return fmt.Sprintf(
-		"expected value for %q matching %q, got %s",
+		"expected value for %q matching %q, got %q",
 		e.Tag,
 		e.Pattern,
 		e.Value,

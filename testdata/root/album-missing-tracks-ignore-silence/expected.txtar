@@ -1,0 +1,46 @@
+-- artist1/album1/track1-disc1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "DISCNUMBER": ["1"],
+    "TRACKNUMBER": ["1"],
+    "TRACKTOTAL": ["3"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}
+-- artist1/album1/track3-disc1.flac --
+{
+  "tags": {
+    "MUSICBRAINZ_ALBUMID": ["ID1"],
+    "ARTISTSORT": ["artist1"],
+    "LYRICS": ["existing lyrics"],
+    "ARTIST": ["artist1"],
+    "ALBUM": ["album1"],
+    "TITLE": ["track1"],
+    "DISCNUMBER": ["1"],
+    "TRACKNUMBER": ["3"],
+    "TRACKTOTAL": ["3"],
+    "DATE": ["2024"],
+    "GENRE": ["rock"]
+  },
+  "pictures": [
+    {
+      "type": "cover",
+      "mime": "image/png",
+      "img": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    }
+  ]
+}

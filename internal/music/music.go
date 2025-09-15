@@ -22,6 +22,7 @@ import (
 type ScanOptions struct {
 	Write                bool
 	InternationalArtists []string
+	SilenceAlbumTracks   map[string][]int
 	Parallelism          uint16
 
 	FetchLyrics        bool

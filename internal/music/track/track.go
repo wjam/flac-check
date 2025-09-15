@@ -46,11 +46,13 @@ func NewTrack(path string) (*Track, error) {
 	}
 
 	tags := map[string][]string{}
-	for _, c := range comment.Comments {
-		equals := strings.IndexRune(c, '=')
-		key := c[:equals]
-		value := c[equals+1:]
-		tags[key] = append(tags[key], value)
+	if comment != nil {
+		for _, c := range comment.Comments {
+			equals := strings.IndexRune(c, '=')
+			key := c[:equals]
+			value := c[equals+1:]
+			tags[key] = append(tags[key], value)
+		}
 	}
 
 	return &Track{

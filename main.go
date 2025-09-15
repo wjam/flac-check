@@ -69,6 +69,10 @@ func root() *cobra.Command {
 		&opts.InternationalArtists, "international-artists", []string{"BABYMETAL"},
 		"artists which are expected to have lyrics with non-ascii characters",
 	)
+	cmd.Flags().VarP(newStringToIntSliceValue(map[string][]int{
+		"Bowling for Soup/Drunk Enough to Dance":                         {18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
+		"Various Artists/We're a Happy Family: A Tribute to the Ramones": {17, 18},
+	}, &opts.SilenceAlbumTracks), "silence-tracks", "", "Tracks which are just silence so may not be present")
 	cmd.Flags().Uint16Var(
 		&opts.Parallelism, "parallelism", uint16(math.Max(1, float64(runtime.NumCPU()-1))),
 		"number of albums to process in parallel",
