@@ -253,7 +253,7 @@ func TestRoot(t *testing.T) {
 			expectedErrs: []error{
 				errors.MissingTrackNumberError{
 					TrackNumber: 2,
-					Disc:        0,
+					Disc:        1,
 				},
 			},
 		},
@@ -262,7 +262,7 @@ func TestRoot(t *testing.T) {
 			expectedErrs: []error{
 				errors.MissingTrackNumberError{
 					TrackNumber: 1,
-					Disc:        0,
+					Disc:        1,
 				},
 			},
 		},

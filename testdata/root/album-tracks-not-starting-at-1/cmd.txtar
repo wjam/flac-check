@@ -54,4 +54,4 @@
 -- stdout --
 -- stderr --
 level=DEBUG msg="Processing album" path=artist1/album1
-Error: album artist1/album1: track number 1 for disc 0 is missing
+Error: album artist1/album1: track number 1 for disc 1 is missing

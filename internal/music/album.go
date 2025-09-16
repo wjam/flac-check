@@ -152,7 +152,10 @@ func (a album) validateTrackNumbers(silenceTracks map[string][]int) []error {
 
 		for i := lowest; i <= highest; i++ {
 			if _, ok := tracks[i]; !ok && !slices.Contains(silenceTracksForAlbum, i) {
-				errs = append(errs, errors.MissingTrackNumberError{TrackNumber: i})
+				errs = append(errs, errors.MissingTrackNumberError{
+					TrackNumber: i,
+					Disc:        disk,
+				})
 			}
 		}
 	}
