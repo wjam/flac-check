@@ -16,6 +16,7 @@ import (
 
 	errors2 "github.com/wjam/flac-check/internal/errors"
 	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/music/vorbis"
 	"github.com/wjam/flac-check/internal/util"
 
 	"github.com/go-flac/flacpicture/v2"
@@ -63,7 +64,7 @@ func NewTrack(path string) (*Track, error) {
 		picture:       pic,
 		pictureOffset: pi,
 		tags:          tags,
-		newTags:       map[string][]string{},
+		newTags:       map[vorbis.Tag][]string{},
 	}, nil
 }
 
@@ -75,7 +76,7 @@ type Track struct {
 	picture       *flacpicture.MetadataBlockPicture
 	pictureOffset *int
 	tags          map[string][]string
-	newTags       map[string][]string
+	newTags       map[vorbis.Tag][]string
 	newPicture    *flacpicture.MetadataBlockPicture
 }
 
@@ -99,10 +100,10 @@ func (t *Track) HasPicture() bool {
 }
 
 func (t *Track) HasLyrics() bool {
-	if _, ok := t.TagOk("LYRICS"); ok {
+	if _, ok := t.TagOk(vorbis.LyricsTag); ok {
 		return true
 	}
-	if _, ok := t.TagOk("UNSYNCEDLYRICS"); ok {
+	if _, ok := t.TagOk(vorbis.UnsyncedLyricsTag); ok {
 		return true
 	}
 
@@ -110,13 +111,13 @@ func (t *Track) HasLyrics() bool {
 }
 
 func (t *Track) HasGenre() bool {
-	v, ok := t.GetGenres()
+	v, ok := t.TagOk(vorbis.GenreTag)
 
 	return ok && len(v) > 0
 }
 
 func (t *Track) SetUnsyncedLyrics(ctx context.Context, lyrics string, isInternational bool) {
-	if _, ok := t.TagOk("LYRICS"); ok {
+	if _, ok := t.TagOk(vorbis.LyricsTag); ok {
 		panic("check if track already has lyrics")
 	}
 	lyrics = tidyUpLyrics(ctx, lyrics, isInternational)
@@ -124,11 +125,11 @@ func (t *Track) SetUnsyncedLyrics(ctx context.Context, lyrics string, isInternat
 		return
 	}
 
-	t.newTags["UNSYNCEDLYRICS"] = []string{lyrics}
+	t.newTags[vorbis.UnsyncedLyricsTag] = []string{lyrics}
 }
 
 func (t *Track) SetSyncedLyrics(ctx context.Context, lyrics string, isInternational bool) {
-	if _, ok := t.TagOk("UNSYNCEDLYRICS"); ok {
+	if _, ok := t.TagOk(vorbis.UnsyncedLyricsTag); ok {
 		panic("check if track already has lyrics")
 	}
 	lyrics = tidyUpLyrics(ctx, lyrics, isInternational)
@@ -136,43 +137,24 @@ func (t *Track) SetSyncedLyrics(ctx context.Context, lyrics string, isInternatio
 		return
 	}
 
-	t.newTags["LYRICS"] = []string{lyrics}
+	t.newTags[vorbis.LyricsTag] = []string{lyrics}
 }
 
 func (t *Track) SetMusicBrainzAlbumID(id string) {
-	t.newTags["MUSICBRAINZ_ALBUMID"] = []string{id}
-}
-
-func (t *Track) GetMusicBrainzAlbumID() ([]string, bool) {
-	return t.TagOk("MUSICBRAINZ_ALBUMID")
+	t.newTags[vorbis.MusicBrainzAlbumIDTag] = []string{id}
 }
 
 func (t *Track) SetGenres(genres []string) {
-	t.newTags["GENRE"] = genres
-}
-
-func (t *Track) GetGenres() ([]string, bool) {
-	return t.TagOk("GENRE")
-}
-
-func (t *Track) GetDiscNumber() ([]string, bool) {
-	return t.TagOk("DISCNUMBER")
-}
-
-func (t *Track) GetTrackNumber() ([]string, bool) {
-	return t.TagOk("TRACKNUMBER")
-}
-
-func (t *Track) GetMusicBrainzDiscID() ([]string, bool) {
-	return t.TagOk("MUSICBRAINZ_DISCID")
+	t.newTags[vorbis.GenreTag] = genres
 }
 
 func (t *Track) CorrectTags() {
-	for tag, reg := range map[string]*regexp.Regexp{
-		"MUSICBRAINZ_ALBUMID":       regexp.MustCompile("^http://musicbrainz.org/release/(.*).html$"),
-		"MUSICBRAINZ_ALBUMARTISTID": regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
-		"MUSICBRAINZ_ARTISTID":      regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
-		"MUSICBRAINZ_TRACKID":       regexp.MustCompile("^http://musicbrainz.org/track/(.*)$"),
+	//nolint:exhaustive // shorter code rather than covering all scenarios
+	for tag, reg := range map[vorbis.Tag]*regexp.Regexp{
+		vorbis.MusicBrainzAlbumIDTag:       regexp.MustCompile("^http://musicbrainz.org/release/(.*).html$"),
+		vorbis.MusicBrainzAlbumArtistIDTag: regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
+		vorbis.MusicBrainzArtistIDTag:      regexp.MustCompile("^http://musicbrainz.org/artist/(.*)$"),
+		vorbis.MusicBrainzTrackIDTag:       regexp.MustCompile("^http://musicbrainz.org/track/(.*)$"),
 	} {
 		for _, value := range t.Tag(tag) {
 			if matches := reg.FindStringSubmatch(value); matches != nil {
@@ -181,8 +163,9 @@ func (t *Track) CorrectTags() {
 		}
 	}
 
-	for tag, bad := range map[string][]string{
-		"GENRE": {"Unknown"},
+	//nolint:exhaustive // shorter code rather than covering all scenarios
+	for tag, bad := range map[vorbis.Tag][]string{
+		vorbis.GenreTag: {"Unknown"},
 	} {
 		tagValues := t.Tag(tag)
 		changed := false
@@ -208,21 +191,21 @@ func (t *Track) ValidateTags() error {
 
 func (t *Track) validateExpectedTags() []error {
 	var errs []error
-	for _, tag := range []string{
-		"ARTIST",
-		"TRACKNUMBER",
-		"TRACKTOTAL",
-		"ALBUM",
-		"TITLE",
-		"ARTISTSORT",
-		"MUSICBRAINZ_ALBUMID",
-		"DISCNUMBER",
+	for _, tag := range []vorbis.Tag{
+		vorbis.ArtistTag,
+		vorbis.TrackNumberTag,
+		vorbis.TrackTotalTag,
+		vorbis.AlbumTag,
+		vorbis.TitleTag,
+		vorbis.ArtistSortTag,
+		vorbis.MusicBrainzAlbumIDTag,
+		vorbis.DiscNumberTag,
 	} {
 		if values := t.Tag(tag); len(values) != 1 {
-			if tag == "MUSICBRAINZ_ALBUMID" &&
-				((slices.Contains(t.Tag("ARTIST"), "King Size Slim") &&
-					slices.Contains(t.Tag("ALBUM"), "Live at The Man of Kent Alehouse")) ||
-					(slices.Contains(t.Tag("ARTIST"), "House of the Rising Sun") && slices.Contains(t.Tag("ALBUM"), "Tar Babies"))) {
+			if tag == vorbis.MusicBrainzAlbumIDTag &&
+				((slices.Contains(t.Tag(vorbis.ArtistTag), "King Size Slim") &&
+					slices.Contains(t.Tag(vorbis.AlbumTag), "Live at The Man of Kent Alehouse")) ||
+					(slices.Contains(t.Tag(vorbis.ArtistTag), "House of the Rising Sun") && slices.Contains(t.Tag(vorbis.AlbumTag), "Tar Babies"))) {
 				// No musicbrainz entries
 				continue
 			}
@@ -233,13 +216,13 @@ func (t *Track) validateExpectedTags() []error {
 		}
 	}
 
-	errs = append(errs, t.validateTagIsInt("DISCNUMBER")...)
-	errs = append(errs, t.validateTagIsInt("TRACKNUMBER")...)
+	errs = append(errs, t.validateTagIsInt(vorbis.DiscNumberTag)...)
+	errs = append(errs, t.validateTagIsInt(vorbis.TrackNumberTag)...)
 
 	return errs
 }
 
-func (t *Track) validateTagIsInt(tag string) []error {
+func (t *Track) validateTagIsInt(tag vorbis.Tag) []error {
 	var errs []error
 	if vees, ok := t.TagOk(tag); ok {
 		var invalid []string
@@ -261,11 +244,12 @@ func (t *Track) validateTagIsInt(tag string) []error {
 
 func (t *Track) validateTagValues() []error {
 	var errs []error
-	for tag, reg := range map[string]*regexp.Regexp{
-		"MUSICBRAINZ_ALBUMID":       regexp.MustCompile("^[A-Za-z0-9-]+$"),
-		"MUSICBRAINZ_ALBUMARTISTID": regexp.MustCompile("^[A-Za-z0-9-]+$"),
-		"MUSICBRAINZ_ARTISTID":      regexp.MustCompile("^[A-Za-z0-9-]+$"),
-		"MUSICBRAINZ_TRACKID":       regexp.MustCompile("^[A-Za-z0-9-]+$"),
+	//nolint:exhaustive // shorter code rather than covering all scenarios
+	for tag, reg := range map[vorbis.Tag]*regexp.Regexp{
+		vorbis.MusicBrainzAlbumIDTag:       regexp.MustCompile("^[A-Za-z0-9-]+$"),
+		vorbis.MusicBrainzAlbumArtistIDTag: regexp.MustCompile("^[A-Za-z0-9-]+$"),
+		vorbis.MusicBrainzArtistIDTag:      regexp.MustCompile("^[A-Za-z0-9-]+$"),
+		vorbis.MusicBrainzTrackIDTag:       regexp.MustCompile("^[A-Za-z0-9-]+$"),
 	} {
 		for _, value := range t.Tag(tag) {
 			if !reg.MatchString(value) {
@@ -295,18 +279,18 @@ func (t *Track) validatePicture() []error {
 	return errs
 }
 
-func (t *Track) Tag(key string) []string {
+func (t *Track) Tag(key vorbis.Tag) []string {
 	if v, ok := t.newTags[key]; ok {
 		return v
 	}
-	return t.tags[key]
+	return t.tags[string(key)]
 }
 
-func (t *Track) TagOk(key string) ([]string, bool) {
+func (t *Track) TagOk(key vorbis.Tag) ([]string, bool) {
 	if v, ok := t.newTags[key]; ok {
 		return v, true
 	}
-	v, ok := t.tags[key]
+	v, ok := t.tags[string(key)]
 	return v, ok
 }
 
@@ -355,11 +339,11 @@ func (t *Track) updateFlacWithNewTags() error {
 	}
 
 	for k, vs := range t.newTags {
-		if _, ok := t.tags[k]; ok {
-			removeComment(comment, k)
+		if _, ok := t.tags[string(k)]; ok {
+			removeComment(comment, string(k))
 		}
 		for _, v := range vs {
-			if err := comment.Add(k, v); err != nil {
+			if err := comment.Add(string(k), v); err != nil {
 				return err
 			}
 		}
@@ -405,7 +389,7 @@ func (t *Track) changesToSlogAttrs() []any {
 			if len(v) > 0 {
 				value = strings.Join(v, ",")
 			}
-			tagAttrs = append(tagAttrs, slog.String(k, value))
+			tagAttrs = append(tagAttrs, slog.String(string(k), value))
 		}
 		attrs = append(attrs, slog.Group("tags", tagAttrs...))
 	}

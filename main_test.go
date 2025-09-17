@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/music/vorbis"
 	"github.com/wjam/flac-check/internal/util"
 
 	"github.com/go-flac/flacpicture/v2"
@@ -39,7 +40,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-artist-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "ARTIST",
+					Tag:    vorbis.ArtistTag,
 					Values: nil,
 				},
 				errors.NotSingleAlbumArtistError{
@@ -52,7 +53,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-track-number-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "TRACKNUMBER",
+					Tag:    vorbis.TrackNumberTag,
 					Values: nil,
 				},
 			},
@@ -61,7 +62,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-track-total-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "TRACKTOTAL",
+					Tag:    vorbis.TrackTotalTag,
 					Values: nil,
 				},
 			},
@@ -70,7 +71,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-album-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "ALBUM",
+					Tag:    vorbis.AlbumTag,
 					Values: nil,
 				},
 			},
@@ -79,7 +80,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-title-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "TITLE",
+					Tag:    vorbis.TitleTag,
 					Values: nil,
 				},
 			},
@@ -88,7 +89,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-artist-sort-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "ARTISTSORT",
+					Tag:    vorbis.ArtistSortTag,
 					Values: nil,
 				},
 			},
@@ -97,7 +98,7 @@ func TestRoot(t *testing.T) {
 			name: "mismatched-album-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "ALBUM",
+					Tag:    vorbis.AlbumTag,
 					Values: []string{"album1", "album2"},
 				},
 			},
@@ -106,7 +107,7 @@ func TestRoot(t *testing.T) {
 			name: "mismatched-date-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "DATE",
+					Tag:    vorbis.DateTag,
 					Values: []string{"2024", "2024-01-01"},
 				},
 			},
@@ -115,7 +116,7 @@ func TestRoot(t *testing.T) {
 			name: "invalid-date-tag",
 			expectedErrs: []error{
 				errors.InvalidValueError{
-					Tag:         "DATE",
+					Tag:         vorbis.DateTag,
 					Values:      []string{"0001-01-01"},
 					Expectation: "valid",
 				},
@@ -143,7 +144,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-picture-and-musicbrainz-tag",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag: "MUSICBRAINZ_ALBUMID",
+					Tag: vorbis.MusicBrainzAlbumIDTag,
 				},
 			},
 		},
@@ -181,7 +182,7 @@ func TestRoot(t *testing.T) {
 			name: "missing-disc-number",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "DISCNUMBER",
+					Tag:    vorbis.DiscNumberTag,
 					Values: nil,
 				},
 			},
@@ -190,7 +191,7 @@ func TestRoot(t *testing.T) {
 			name: "disc-number-not-a-number",
 			expectedErrs: []error{
 				errors.InvalidIntTagError{
-					Tag:    "DISCNUMBER",
+					Tag:    vorbis.DiscNumberTag,
 					Values: []string{"not-a-number"},
 				},
 			},
@@ -199,7 +200,7 @@ func TestRoot(t *testing.T) {
 			name: "disc-number-multiple-values",
 			expectedErrs: []error{
 				errors.NotSingleTagValueError{
-					Tag:    "DISCNUMBER",
+					Tag:    vorbis.DiscNumberTag,
 					Values: []string{"1", "2"},
 				},
 			},
@@ -223,7 +224,7 @@ func TestRoot(t *testing.T) {
 			name: "track-number-not-a-number",
 			expectedErrs: []error{
 				errors.InvalidIntTagError{
-					Tag:    "TRACKNUMBER",
+					Tag:    vorbis.TrackNumberTag,
 					Values: []string{"not-a-number"},
 				},
 			},
@@ -242,7 +243,7 @@ func TestRoot(t *testing.T) {
 			name: "multiple-musicbrainz-albumid-not-allowed",
 			expectedErrs: []error{
 				errors.InvalidValueError{
-					Tag:         "MUSICBRAINZ_ALBUMID",
+					Tag:         vorbis.MusicBrainzAlbumIDTag,
 					Values:      []string{"ID1", "ID2"},
 					Expectation: "single",
 				},

@@ -8,12 +8,13 @@ import (
 
 	"github.com/wjam/flac-check/internal/errors"
 	"github.com/wjam/flac-check/internal/music/track"
+	"github.com/wjam/flac-check/internal/music/vorbis"
 	"github.com/wjam/flac-check/internal/util"
 )
 
 type album []*track.Track
 
-func (a album) getTag(name string) []string {
+func (a album) getTag(name vorbis.Tag) []string {
 	values := map[string]struct{}{}
 
 	for _, m := range a {
@@ -29,7 +30,8 @@ func (a album) getTag(name string) []string {
 func (a album) validateTags(silenceTracks map[string][]int) []error {
 	var errs []error
 
-	for tag, invalid := range map[string][]string{"ALBUM": {""}, "DATE": {"", "0001-01-01"}} {
+	//nolint:exhaustive // shorter code rather than covering all scenarios
+	for tag, invalid := range map[vorbis.Tag][]string{vorbis.AlbumTag: {""}, vorbis.DateTag: {"", "0001-01-01"}} {
 		values := a.getTag(tag)
 		if len(values) != 1 {
 			errs = append(errs, errors.NotSingleTagValueError{
@@ -48,9 +50,9 @@ func (a album) validateTags(silenceTracks map[string][]int) []error {
 	}
 
 	// Either ARTIST or ALBUMARTIST should be consistent across tracks
-	artists := a.getTag("ARTIST")
+	artists := a.getTag(vorbis.ArtistTag)
 	if len(artists) != 1 {
-		albumArtists := a.getTag("ALBUMARTIST")
+		albumArtists := a.getTag(vorbis.AlbumArtistTag)
 		if len(albumArtists) != 1 {
 			errs = append(errs, errors.NotSingleAlbumArtistError{
 				Artists:      artists,
@@ -79,7 +81,7 @@ func (a album) validateDiscNumbers() []error {
 	highest := math.MinInt32
 
 	for _, t := range a {
-		vees, ok := t.GetDiscNumber()
+		vees, ok := t.TagOk(vorbis.DiscNumberTag)
 		if !ok {
 			continue
 		}
@@ -121,13 +123,13 @@ func (a album) validateTrackNumbers(silenceTracks map[string][]int) []error {
 	discTracks := a.readDiscTrackNumberCounts()
 
 	var albumName string
-	if v, ok := a[0].TagOk("ALBUM"); ok {
+	if v, ok := a[0].TagOk(vorbis.AlbumTag); ok {
 		albumName = v[0]
 	}
 	var artist string
-	if v, ok := a[0].TagOk("ALBUMARTIST"); ok {
+	if v, ok := a[0].TagOk(vorbis.AlbumArtistTag); ok {
 		artist = v[0]
-	} else if v, ok := a[0].TagOk("ARTIST"); ok {
+	} else if v, ok := a[0].TagOk(vorbis.ArtistTag); ok {
 		artist = v[0]
 	}
 
@@ -166,7 +168,7 @@ func (a album) validateTrackNumbers(silenceTracks map[string][]int) []error {
 func (a album) readDiscTrackNumberCounts() map[int]map[int]int {
 	discTracks := map[int]map[int]int{}
 	for _, t := range a {
-		vees, ok := t.GetDiscNumber()
+		vees, ok := t.TagOk(vorbis.DiscNumberTag)
 		if !ok {
 			continue
 		}
@@ -175,7 +177,7 @@ func (a album) readDiscTrackNumberCounts() map[int]map[int]int {
 			continue
 		}
 
-		vees, ok = t.GetTrackNumber()
+		vees, ok = t.TagOk(vorbis.TrackNumberTag)
 		if !ok {
 			continue
 		}
@@ -193,13 +195,13 @@ func (a album) readDiscTrackNumberCounts() map[int]map[int]int {
 }
 
 func (a album) validateConsistentGenre() error {
-	genres, _ := a[0].GetGenres()
+	genres, _ := a[0].TagOk(vorbis.GenreTag)
 
 	for _, t := range a {
-		other, _ := t.GetGenres()
+		other, _ := t.TagOk(vorbis.GenreTag)
 		if !slices.Equal(genres, other) {
 			return errors.InvalidGenreTagError{
-				Values: a.getTag("GENRE"),
+				Values: a.getTag(vorbis.GenreTag),
 			}
 		}
 	}
@@ -211,7 +213,7 @@ func (a album) validateMusicBrainzTags() error {
 	albums := map[string]struct{}{}
 
 	for _, t := range a {
-		v, ok := t.GetMusicBrainzAlbumID()
+		v, ok := t.TagOk(vorbis.MusicBrainzAlbumIDTag)
 		if !ok {
 			continue
 		}
@@ -223,7 +225,7 @@ func (a album) validateMusicBrainzTags() error {
 
 	if len(albums) > 1 {
 		return errors.InvalidValueError{
-			Tag:         "MUSICBRAINZ_ALBUMID",
+			Tag:         vorbis.MusicBrainzAlbumIDTag,
 			Values:      util.Keys(albums),
 			Expectation: "single",
 		}

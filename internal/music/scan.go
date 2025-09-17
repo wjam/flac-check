@@ -11,6 +11,7 @@ import (
 	"github.com/wjam/flac-check/internal/log"
 	"github.com/wjam/flac-check/internal/lrclib"
 	"github.com/wjam/flac-check/internal/music/track"
+	"github.com/wjam/flac-check/internal/music/vorbis"
 	"github.com/wjam/flac-check/internal/musicbrainz"
 	"github.com/wjam/flac-check/internal/util"
 )
@@ -83,12 +84,12 @@ func (s *Scan) handleTrack(ctx context.Context, track *track.Track) error {
 	return nil
 }
 
-func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, track *track.Track) error {
-	if _, ok := track.GetMusicBrainzAlbumID(); ok {
+func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, tr *track.Track) error {
+	if _, ok := tr.TagOk(vorbis.MusicBrainzAlbumIDTag); ok {
 		return nil
 	}
 
-	v, ok := track.GetMusicBrainzDiscID()
+	v, ok := tr.TagOk(vorbis.MusicBrainzDiscIDTag)
 	if !ok || len(v) != 1 {
 		return nil
 	}
@@ -102,13 +103,13 @@ func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, track *track.Track) er
 		return err
 	}
 
-	track.SetMusicBrainzAlbumID(rel.ID)
+	tr.SetMusicBrainzAlbumID(rel.ID)
 
 	return nil
 }
 
-func (s *Scan) addFrontCoverToTrack(ctx context.Context, track *track.Track) error {
-	albumID, ok := track.GetMusicBrainzAlbumID()
+func (s *Scan) addFrontCoverToTrack(ctx context.Context, tr *track.Track) error {
+	albumID, ok := tr.TagOk(vorbis.MusicBrainzAlbumIDTag)
 	if !ok {
 		return nil
 	}
@@ -141,19 +142,19 @@ func (s *Scan) addFrontCoverToTrack(ctx context.Context, track *track.Track) err
 	if err != nil {
 		return err
 	}
-	return track.SetPicture(data, cover)
+	return tr.SetPicture(data, cover)
 }
 
 func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
-	title, ok := meta.TagOk("TITLE")
+	title, ok := meta.TagOk(vorbis.TitleTag)
 	if !ok || len(title) != 1 {
 		return nil
 	}
-	artist, ok := meta.TagOk("ARTIST")
+	artist, ok := meta.TagOk(vorbis.ArtistTag)
 	if !ok || len(artist) != 1 {
 		return nil
 	}
-	album, ok := meta.TagOk("ALBUM")
+	album, ok := meta.TagOk(vorbis.AlbumTag)
 	if !ok || len(album) != 1 {
 		return nil
 	}
@@ -184,8 +185,8 @@ func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
 	return errors.New("lyrics was empty")
 }
 
-func (s *Scan) addGenreTag(ctx context.Context, track *track.Track) error {
-	albumID, ok := track.GetMusicBrainzAlbumID()
+func (s *Scan) addGenreTag(ctx context.Context, tr *track.Track) error {
+	albumID, ok := tr.TagOk(vorbis.MusicBrainzAlbumIDTag)
 	if !ok {
 		return nil
 	}
@@ -203,7 +204,7 @@ func (s *Scan) addGenreTag(ctx context.Context, track *track.Track) error {
 	if len(genres) > 0 {
 		genres := util.Keys(genres)
 		slices.Sort(genres)
-		track.SetGenres(genres)
+		tr.SetGenres(genres)
 	}
 
 	return nil

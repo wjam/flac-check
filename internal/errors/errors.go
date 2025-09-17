@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/wjam/flac-check/internal/music/vorbis"
 )
 
 var _ error = NotSingleAlbumArtistError{}
@@ -32,7 +34,7 @@ func (e NotSingleAlbumArtistError) Is(err error) bool {
 var _ error = NotSingleTagValueError{}
 
 type NotSingleTagValueError struct {
-	Tag    string
+	Tag    vorbis.Tag
 	Values []string
 }
 
@@ -55,7 +57,7 @@ func (e NotSingleTagValueError) Is(err error) bool {
 var _ error = InvalidValueError{}
 
 type InvalidValueError struct {
-	Tag         string
+	Tag         vorbis.Tag
 	Values      []string
 	Expectation string
 }
@@ -80,7 +82,7 @@ func (e InvalidValueError) Is(err error) bool {
 var _ error = InvalidIntTagError{}
 
 type InvalidIntTagError struct {
-	Tag    string
+	Tag    vorbis.Tag
 	Values []string
 }
 
@@ -218,7 +220,7 @@ func (e InvalidGenreTagError) Is(err error) bool {
 var _ error = InvalidTagValueError{}
 
 type InvalidTagValueError struct {
-	Tag     string
+	Tag     vorbis.Tag
 	Pattern string
 	Value   string
 }
