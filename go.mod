@@ -7,7 +7,7 @@ require (
 	github.com/go-flac/flacpicture/v2 v2.0.2
 	github.com/go-flac/flacvorbis/v2 v2.0.2
 	github.com/go-flac/go-flac/v2 v2.0.4
-	github.com/goyek/goyek/v2 v2.3.0
+	github.com/goyek/goyek/v3 v3.0.0
 	github.com/goyek/x v0.4.0
 	github.com/sourcegraph/conc v0.3.0
 	github.com/spf13/cobra v1.10.1
@@ -21,7 +21,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/goyek/goyek/v3 v3.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

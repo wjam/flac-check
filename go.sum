@@ -13,8 +13,6 @@ github.com/go-flac/flacvorbis/v2 v2.0.2 h1:xCL3OhxrxWkHrbWUBvGNe+6FQ03yLmBbz0v5z
 github.com/go-flac/flacvorbis/v2 v2.0.2/go.mod h1:SwTB5gs13VaM/N7rstwPoUsPibiMKklgwybYP9dYo2g=
 github.com/go-flac/go-flac/v2 v2.0.4 h1:atf/kFa8U9idtkA//NO22XGr+MzQLeXZecnmP9sYBf0=
 github.com/go-flac/go-flac/v2 v2.0.4/go.mod h1:sYOlTKxutMW0RDYF+KlD6Zn+VOCZlIFQG/r/usPveCs=
-github.com/goyek/goyek/v2 v2.3.0 h1:ZQlQZp+JOkbZXuPNw6SbeQxYMRKB0Gm3nbC2K9IY1r4=
-github.com/goyek/goyek/v2 v2.3.0/go.mod h1:VKzmleKfV5LB9f20Xg5umuPC4XfSdDXwPNesfr1RsLU=
 github.com/goyek/goyek/v3 v3.0.0 h1:WwitsxY+DOEcYH8tGciagfi/XXlUASCQzHD33ITiJy8=
 github.com/goyek/goyek/v3 v3.0.0/go.mod h1:+s6hMsSBkg3ph3o6ImXU5bY+azWRh3eKRwrhIqxuz0U=
 github.com/goyek/x v0.4.0 h1:o/O7CJ0wLH/XN1QkruJ84og7ZKQmUImLoZQfjv3K9WY=
