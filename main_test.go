@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,9 +17,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wjam/flac-check/internal/errors"
+	"github.com/wjam/flac-check/internal/errorutil"
+	"github.com/wjam/flac-check/internal/music"
+	"github.com/wjam/flac-check/internal/music/track"
 	"github.com/wjam/flac-check/internal/music/vorbis"
-	"github.com/wjam/flac-check/internal/util"
 
 	"github.com/go-flac/flacpicture/v2"
 	"github.com/go-flac/flacvorbis/v2"
@@ -39,11 +41,11 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-artist-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.ArtistTag,
 					Values: nil,
 				},
-				errors.NotSingleAlbumArtistError{
+				music.NotSingleAlbumArtistError{
 					Artists:      nil,
 					AlbumArtists: nil,
 				},
@@ -52,7 +54,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-track-number-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.TrackNumberTag,
 					Values: nil,
 				},
@@ -61,7 +63,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-track-total-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.TrackTotalTag,
 					Values: nil,
 				},
@@ -70,7 +72,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-album-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.AlbumTag,
 					Values: nil,
 				},
@@ -79,7 +81,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-title-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.TitleTag,
 					Values: nil,
 				},
@@ -88,7 +90,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-artist-sort-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.ArtistSortTag,
 					Values: nil,
 				},
@@ -97,7 +99,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "mismatched-album-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.AlbumTag,
 					Values: []string{"album1", "album2"},
 				},
@@ -106,7 +108,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "mismatched-date-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.DateTag,
 					Values: []string{"2024", "2024-01-01"},
 				},
@@ -115,7 +117,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "invalid-date-tag",
 			expectedErrs: []error{
-				errors.InvalidValueError{
+				music.InvalidValueError{
 					Tag:         vorbis.DateTag,
 					Values:      []string{"0001-01-01"},
 					Expectation: "valid",
@@ -126,7 +128,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-albumartist-tag",
 			expectedErrs: []error{
-				errors.NotSingleAlbumArtistError{
+				music.NotSingleAlbumArtistError{
 					Artists:      []string{"artist1", "artist1 and someone else"},
 					AlbumArtists: []string{"artist1", "artist2"},
 				},
@@ -135,7 +137,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-artist-tag",
 			expectedErrs: []error{
-				errors.NotSingleAlbumArtistError{
+				music.NotSingleAlbumArtistError{
 					Artists: []string{"artist1", "artist1 and someone else"},
 				},
 			},
@@ -143,7 +145,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-picture-and-musicbrainz-tag",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag: vorbis.MusicBrainzAlbumIDTag,
 				},
 			},
@@ -157,7 +159,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-genre-tag",
 			expectedErrs: []error{
-				errors.InvalidGenreTagError{
+				music.InvalidGenreTagError{
 					Values: []string{"granite", "rock"},
 				},
 			},
@@ -165,7 +167,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "inconsistent-genre-tag-with-missing",
 			expectedErrs: []error{
-				errors.InvalidGenreTagError{
+				music.InvalidGenreTagError{
 					Values: []string{"metal", "rock"},
 				},
 			},
@@ -181,7 +183,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "missing-disc-number",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.DiscNumberTag,
 					Values: nil,
 				},
@@ -190,7 +192,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "disc-number-not-a-number",
 			expectedErrs: []error{
-				errors.InvalidIntTagError{
+				track.InvalidIntTagError{
 					Tag:    vorbis.DiscNumberTag,
 					Values: []string{"not-a-number"},
 				},
@@ -199,7 +201,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "disc-number-multiple-values",
 			expectedErrs: []error{
-				errors.NotSingleTagValueError{
+				errorutil.NotSingleTagValueError{
 					Tag:    vorbis.DiscNumberTag,
 					Values: []string{"1", "2"},
 				},
@@ -208,7 +210,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "disc-number-invalid-start",
 			expectedErrs: []error{
-				errors.InvalidStartingDiscNumberError{
+				music.InvalidStartingDiscNumberError{
 					Lowest: 2,
 				},
 			},
@@ -216,14 +218,14 @@ func TestRoot(t *testing.T) {
 		{
 			name: "disc-number-missing-numbers",
 			expectedErrs: []error{
-				errors.MissingDiscNumberError{DiscNumber: 2},
-				errors.MissingDiscNumberError{DiscNumber: 4},
+				music.MissingDiscNumberError{DiscNumber: 2},
+				music.MissingDiscNumberError{DiscNumber: 4},
 			},
 		},
 		{
 			name: "track-number-not-a-number",
 			expectedErrs: []error{
-				errors.InvalidIntTagError{
+				track.InvalidIntTagError{
 					Tag:    vorbis.TrackNumberTag,
 					Values: []string{"not-a-number"},
 				},
@@ -232,7 +234,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "track-number-collision",
 			expectedErrs: []error{
-				errors.DiscTrackNumberCollisionError{
+				music.DiscTrackNumberCollisionError{
 					DiscNumber:  1,
 					TrackNumber: 1,
 					Count:       2,
@@ -242,7 +244,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "multiple-musicbrainz-albumid-not-allowed",
 			expectedErrs: []error{
-				errors.InvalidValueError{
+				music.InvalidValueError{
 					Tag:         vorbis.MusicBrainzAlbumIDTag,
 					Values:      []string{"ID1", "ID2"},
 					Expectation: "single",
@@ -252,7 +254,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "album-with-missing-tracks",
 			expectedErrs: []error{
-				errors.MissingTrackNumberError{
+				music.MissingTrackNumberError{
 					TrackNumber: 2,
 					Disc:        1,
 				},
@@ -261,7 +263,7 @@ func TestRoot(t *testing.T) {
 		{
 			name: "album-tracks-not-starting-at-1",
 			expectedErrs: []error{
-				errors.MissingTrackNumberError{
+				music.MissingTrackNumberError{
 					TrackNumber: 1,
 					Disc:        1,
 				},
@@ -310,7 +312,7 @@ func runMusicTest(t *testing.T, dir string, cmd *cobra.Command, test *txtar.Arch
 	var args []string
 	comment := strings.TrimSpace(string(test.Comment))
 	comment = serverBaseURLs.Replace(comment)
-	for _, l := range strings.Split(comment, "\n") {
+	for l := range strings.SplitSeq(comment, "\n") {
 		if !strings.HasPrefix(l, "#") {
 			args = append(args, strings.Split(l, " ")...)
 		}
@@ -437,9 +439,7 @@ func (h requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	for k, v := range response.Header {
-		w.Header()[k] = v
-	}
+	maps.Copy(w.Header(), response.Header)
 	w.WriteHeader(response.StatusCode)
 	if _, err := w.Write(body); err != nil {
 		panic(err)
@@ -476,7 +476,7 @@ func readFlacFile(t *testing.T, path string) flacFile {
 	f, err := flac.ParseFile(path)
 	require.NoError(t, err)
 
-	comment, _, err := util.ExtractCommentFromFlacFile(f)
+	comment, _, err := track.ExtractCommentFromFlacFile(f)
 	require.NoError(t, err)
 
 	tags := map[string][]string{}

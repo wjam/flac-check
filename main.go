@@ -7,10 +7,11 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 
 	"github.com/wjam/flac-check/internal/coverart"
-	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/logging"
 	"github.com/wjam/flac-check/internal/lrclib"
 	"github.com/wjam/flac-check/internal/music"
 	"github.com/wjam/flac-check/internal/musicbrainz"
@@ -45,10 +46,10 @@ func root() *cobra.Command {
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			ctx := log.ContextWithLogger(cmd.Context(), slog.New(log.WithAttrsFromContextHandler{
+			ctx := logging.ContextWithLogger(cmd.Context(), slog.New(logging.WithAttrsFromContextHandler{
 				Parent: slog.NewTextHandler(cmd.ErrOrStderr(), &slog.HandlerOptions{
 					Level:       logLevel.level,
-					ReplaceAttr: log.FilterAttributesFromLog(removeLogAttrs),
+					ReplaceAttr: filterAttributesFromLog(removeLogAttrs),
 				}),
 			}))
 
@@ -105,4 +106,21 @@ func root() *cobra.Command {
 	}
 
 	return cmd
+}
+
+func filterAttributesFromLog(ignored []string) func(groups []string, a slog.Attr) slog.Attr {
+	lookup := make(map[string]struct{}, len(ignored))
+	for _, s := range ignored {
+		lookup[s] = struct{}{}
+	}
+	return func(groups []string, a slog.Attr) slog.Attr {
+		parts := append(groups, a.Key) //nolint:gocritic // two slices are semantically different
+		for i := 1; i <= len(parts); i++ {
+			key := strings.Join(parts[:i], ".")
+			if _, ok := lookup[key]; ok {
+				return slog.Attr{}
+			}
+		}
+		return a
+	}
 }

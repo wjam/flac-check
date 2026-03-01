@@ -12,12 +12,12 @@ import (
 	"github.com/carlmjohnson/requests"
 	"golang.org/x/time/rate"
 
-	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/logging"
 )
 
 func TransportCache() requests.Config {
 	cache := &cacheTripper{
-		parent: requests.LogTransport(nil, log.HTTP),
+		parent: requests.LogTransport(nil, logging.HTTP),
 	}
 	return func(rb *requests.Builder) {
 		rb.Transport(cache)

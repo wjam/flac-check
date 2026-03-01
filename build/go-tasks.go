@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -47,11 +48,20 @@ var goBuild = goyek.Define(goyek.Task{
 			return
 		}
 
+		var stderr strings.Builder
 		ext := strings.TrimSpace(stdout.String())
-		cmd.Exec(a,
-			fmt.Sprintf(`go build -trimpath -ldflags="-s -w" -o bin/flac-check%s .`, ext),
+		if !cmd.Exec(a,
+			fmt.Sprintf(`go build -trimpath -ldflags="-dumpdep -s -w" -o bin/flac-check%s .`, ext),
 			cmd.Env("CGO_ENABLED", "0"),
-		)
+			cmd.Stderr(&stderr),
+		) {
+			return
+		}
+
+		err := os.WriteFile(filepath.Join("bin", "deps.txt"), []byte(stderr.String()), 0600)
+		if err != nil {
+			a.Fatal(err)
+		}
 	},
 	Deps: []*goyek.DefinedTask{mkdirBin},
 })

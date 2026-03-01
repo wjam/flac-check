@@ -6,33 +6,33 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"maps"
 	"slices"
 
-	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/logging"
 	"github.com/wjam/flac-check/internal/lrclib"
 	"github.com/wjam/flac-check/internal/music/track"
 	"github.com/wjam/flac-check/internal/music/vorbis"
 	"github.com/wjam/flac-check/internal/musicbrainz"
-	"github.com/wjam/flac-check/internal/util"
 )
 
 func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry) error {
-	ctx = log.WithAttrs(ctx, slog.String("path", root))
-	log.Logger(ctx).DebugContext(ctx, "Processing album")
+	ctx = logging.WithAttrs(ctx, slog.String("path", root))
+	logging.FromContext(ctx).DebugContext(ctx, "Processing album")
 	album, err := readAllFlacTracks(ctx, root, files)
 	if err != nil {
 		return err
 	}
 
 	if len(album) == 0 {
-		log.Logger(ctx).InfoContext(ctx, "Skipped album as it doesn't contain FLAC files")
+		logging.FromContext(ctx).InfoContext(ctx, "Skipped album as it doesn't contain FLAC files")
 		return nil
 	}
 
 	var errs []error
 
 	for _, m := range album {
-		ctx := log.WithAttrs(ctx, slog.String("track", m.String()))
+		ctx := logging.WithAttrs(ctx, slog.String("track", m.String()))
 		if err := s.handleTrack(ctx, m); err != nil {
 			errs = append(errs, fmt.Errorf("failed to handle track %s: %w", m, err))
 		}
@@ -45,7 +45,7 @@ func (s *Scan) handleAlbum(ctx context.Context, root string, files []fs.DirEntry
 	}
 
 	for _, t := range album {
-		ctx := log.WithAttrs(ctx, slog.String("track", t.String()))
+		ctx := logging.WithAttrs(ctx, slog.String("track", t.String()))
 		errs = append(errs, t.Save(ctx, s.opts.Write))
 	}
 
@@ -97,7 +97,7 @@ func (s *Scan) addMusicBrainzAlbumID(ctx context.Context, tr *track.Track) error
 	rel, err := s.music.GetReleaseFromDiscID(ctx, v[0])
 	if err != nil {
 		if errors.Is(err, musicbrainz.ErrNoReleaseFound) {
-			log.Logger(ctx).InfoContext(ctx, "Unable to populate musicbrainz album ID")
+			logging.FromContext(ctx).InfoContext(ctx, "Unable to populate musicbrainz album ID")
 			return nil
 		}
 		return err
@@ -161,14 +161,14 @@ func (s *Scan) addLyricsToTrack(ctx context.Context, meta *track.Track) error {
 	lyrics, err := s.lyrics.FindLyricsForTrack(ctx, title[0], artist[0], album[0])
 	if err != nil {
 		if errors.Is(err, lrclib.ErrNoLyricsFound) {
-			log.Logger(ctx).DebugContext(ctx, "No lyrics found")
+			logging.FromContext(ctx).DebugContext(ctx, "No lyrics found")
 			return nil
 		}
 		return err
 	}
 
 	if lyrics.Instrumental {
-		log.Logger(ctx).DebugContext(ctx, "No lyrics found")
+		logging.FromContext(ctx).DebugContext(ctx, "No lyrics found")
 		return nil
 	}
 
@@ -202,8 +202,7 @@ func (s *Scan) addGenreTag(ctx context.Context, tr *track.Track) error {
 	}
 
 	if len(genres) > 0 {
-		genres := util.Keys(genres)
-		slices.Sort(genres)
+		genres := slices.Sorted(maps.Keys(genres))
 		tr.SetGenres(genres)
 	}
 

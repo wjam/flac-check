@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/wjam/flac-check/internal/cache"
-	"github.com/wjam/flac-check/internal/log"
+	"github.com/wjam/flac-check/internal/logging"
 
 	"github.com/carlmjohnson/requests"
 )
@@ -83,7 +83,7 @@ func (c *Client) GetReleaseFromDiscID(ctx context.Context, discID string) (*Rele
 	var validReleases []Release
 	for _, release := range discs.Releases {
 		if release.Country != "XE" && release.Country != "XW" && release.Country != "GB" {
-			log.Logger(ctx).DebugContext(
+			logging.FromContext(ctx).DebugContext(
 				ctx,
 				"Skipping release as incorrect country",
 				slog.String("country", release.Country),
@@ -91,11 +91,11 @@ func (c *Client) GetReleaseFromDiscID(ctx context.Context, discID string) (*Rele
 			continue
 		}
 		if len(release.Media) != 1 {
-			log.Logger(ctx).DebugContext(ctx, "Skipping release as no media")
+			logging.FromContext(ctx).DebugContext(ctx, "Skipping release as no media")
 			continue
 		}
 		if release.Media[0].Format != "CD" {
-			log.Logger(ctx).DebugContext(
+			logging.FromContext(ctx).DebugContext(
 				ctx,
 				"Skipping release as incorrect media format",
 				slog.String("format", release.Media[0].Format),

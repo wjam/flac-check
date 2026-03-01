@@ -1,4 +1,4 @@
-package errors
+package music
 
 import (
 	"fmt"
@@ -31,29 +31,6 @@ func (e NotSingleAlbumArtistError) Is(err error) bool {
 	return slices.Equal(e.AlbumArtists, e2.AlbumArtists) && slices.Equal(e.Artists, e2.Artists)
 }
 
-var _ error = NotSingleTagValueError{}
-
-type NotSingleTagValueError struct {
-	Tag    vorbis.Tag
-	Values []string
-}
-
-func (e NotSingleTagValueError) Error() string {
-	return fmt.Sprintf(
-		"expected single value for %q, got %s",
-		e.Tag,
-		join(e.Values),
-	)
-}
-
-func (e NotSingleTagValueError) Is(err error) bool {
-	e2, ok := err.(NotSingleTagValueError)
-	if !ok {
-		return false
-	}
-	return e.Tag == e2.Tag && slices.Equal(e.Values, e2.Values)
-}
-
 var _ error = InvalidValueError{}
 
 type InvalidValueError struct {
@@ -73,29 +50,6 @@ func (e InvalidValueError) Error() string {
 
 func (e InvalidValueError) Is(err error) bool {
 	e2, ok := err.(InvalidValueError)
-	if !ok {
-		return false
-	}
-	return e.Tag == e2.Tag && slices.Equal(e.Values, e2.Values)
-}
-
-var _ error = InvalidIntTagError{}
-
-type InvalidIntTagError struct {
-	Tag    vorbis.Tag
-	Values []string
-}
-
-func (e InvalidIntTagError) Error() string {
-	return fmt.Sprintf(
-		"expected integer value for %q, got %s",
-		e.Tag,
-		join(e.Values),
-	)
-}
-
-func (e InvalidIntTagError) Is(err error) bool {
-	e2, ok := err.(InvalidIntTagError)
 	if !ok {
 		return false
 	}
@@ -136,25 +90,6 @@ func (e MissingDiscNumberError) Is(err error) bool {
 		return false
 	}
 	return e.DiscNumber == e2.DiscNumber
-}
-
-var _ error = InvalidStartingTrackNumberError{}
-
-type InvalidStartingTrackNumberError struct {
-	Lowest int
-	Disc   int
-}
-
-func (e InvalidStartingTrackNumberError) Error() string {
-	return fmt.Sprintf("track number for disc %d must start at 1 rather than %d", e.Disc, e.Lowest)
-}
-
-func (e InvalidStartingTrackNumberError) Is(err error) bool {
-	e2, ok := err.(InvalidStartingTrackNumberError)
-	if !ok {
-		return false
-	}
-	return e.Lowest == e2.Lowest && e.Disc == e2.Disc
 }
 
 var _ error = MissingTrackNumberError{}
@@ -215,31 +150,6 @@ func (e InvalidGenreTagError) Is(err error) bool {
 		return false
 	}
 	return slices.Equal(e.Values, e2.Values)
-}
-
-var _ error = InvalidTagValueError{}
-
-type InvalidTagValueError struct {
-	Tag     vorbis.Tag
-	Pattern string
-	Value   string
-}
-
-func (e InvalidTagValueError) Error() string {
-	return fmt.Sprintf(
-		"expected value for %q matching %q, got %q",
-		e.Tag,
-		e.Pattern,
-		e.Value,
-	)
-}
-
-func (e InvalidTagValueError) Is(err error) bool {
-	e2, ok := err.(InvalidTagValueError)
-	if !ok {
-		return false
-	}
-	return e.Tag == e2.Tag && e.Pattern == e2.Pattern && e.Value == e2.Value
 }
 
 func join(s []string) string {

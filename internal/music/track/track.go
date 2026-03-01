@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,16 +15,27 @@ import (
 	"strconv"
 	"strings"
 
-	errors2 "github.com/wjam/flac-check/internal/errors"
-	"github.com/wjam/flac-check/internal/log"
+	errors2 "github.com/wjam/flac-check/internal/errorutil"
+	"github.com/wjam/flac-check/internal/logging"
 	"github.com/wjam/flac-check/internal/music/vorbis"
-	"github.com/wjam/flac-check/internal/util"
 
 	"github.com/go-flac/flacpicture/v2"
 	"github.com/go-flac/flacvorbis/v2"
 	"github.com/go-flac/go-flac/v2"
 	"golang.org/x/text/encoding/charmap"
 )
+
+type Track struct {
+	fileName      string
+	flac          *flac.File
+	comment       *flacvorbis.MetaDataBlockVorbisComment
+	commentOffset *int
+	picture       *flacpicture.MetadataBlockPicture
+	pictureOffset *int
+	tags          map[string][]string
+	newTags       map[vorbis.Tag][]string
+	newPicture    *flacpicture.MetadataBlockPicture
+}
 
 func NewTrack(path string) (*Track, error) {
 	content, err := os.ReadFile(path)
@@ -36,13 +48,15 @@ func NewTrack(path string) (*Track, error) {
 		return nil, err
 	}
 
-	comment, ci, err := util.ExtractCommentFromFlacFile(f)
+	comment, ci, err := ExtractCommentFromFlacFile(f)
 	if err != nil {
+		_ = f.Close()
 		return nil, err
 	}
 
 	pic, pi, err := extractPicture(f)
 	if err != nil {
+		_ = f.Close()
 		return nil, err
 	}
 
@@ -66,18 +80,6 @@ func NewTrack(path string) (*Track, error) {
 		tags:          tags,
 		newTags:       map[vorbis.Tag][]string{},
 	}, nil
-}
-
-type Track struct {
-	fileName      string
-	flac          *flac.File
-	comment       *flacvorbis.MetaDataBlockVorbisComment
-	commentOffset *int
-	picture       *flacpicture.MetadataBlockPicture
-	pictureOffset *int
-	tags          map[string][]string
-	newTags       map[vorbis.Tag][]string
-	newPicture    *flacpicture.MetadataBlockPicture
 }
 
 func (t *Track) SetPicture(pic []byte, url string) error {
@@ -233,7 +235,7 @@ func (t *Track) validateTagIsInt(tag vorbis.Tag) []error {
 		}
 
 		if len(invalid) > 0 {
-			errs = append(errs, errors2.InvalidIntTagError{
+			errs = append(errs, InvalidIntTagError{
 				Tag:    tag,
 				Values: invalid,
 			})
@@ -253,7 +255,7 @@ func (t *Track) validateTagValues() []error {
 	} {
 		for _, value := range t.Tag(tag) {
 			if !reg.MatchString(value) {
-				errs = append(errs, errors2.InvalidTagValueError{
+				errs = append(errs, InvalidTagValueError{
 					Tag:     tag,
 					Pattern: reg.String(),
 					Value:   value,
@@ -316,7 +318,7 @@ func (t *Track) saveChanges(ctx context.Context) error {
 		return ctx.Err()
 	}
 
-	log.Logger(ctx).WarnContext(ctx, "Saving changes to track", t.changesToSlogAttrs()...)
+	logging.FromContext(ctx).WarnContext(ctx, "Saving changes to track", t.changesToSlogAttrs()...)
 
 	if err := t.updateFlacWithNewTags(); err != nil {
 		return err
@@ -377,7 +379,7 @@ func (t *Track) saveBlockToFlac(block marshalable, offset *int) {
 }
 
 func (t *Track) logChanges(ctx context.Context) {
-	log.Logger(ctx).WarnContext(ctx, "Updated track", t.changesToSlogAttrs()...)
+	logging.FromContext(ctx).WarnContext(ctx, "Updated track", t.changesToSlogAttrs()...)
 }
 
 func (t *Track) changesToSlogAttrs() []any {
@@ -442,9 +444,8 @@ func tidyUpLyrics(ctx context.Context, text string, isInternational bool) string
 		}
 	}
 
-	nonEnglishChars := util.Keys(unknown)
-	slices.Sort(nonEnglishChars)
-	log.Logger(ctx).InfoContext(ctx,
+	nonEnglishChars := slices.Sorted(maps.Keys(unknown))
+	logging.FromContext(ctx).InfoContext(ctx,
 		"Skipped lyrics as it wasn't english",
 		slog.String("unknown", strings.Join(nonEnglishChars, "")),
 		slog.String("lyrics", text),
@@ -483,4 +484,18 @@ func notEnglishOrEmojiCharacters(r rune) bool {
 
 type marshalable interface {
 	Marshal() flac.MetaDataBlock
+}
+
+func ExtractCommentFromFlacFile(f *flac.File) (*flacvorbis.MetaDataBlockVorbisComment, *int, error) {
+	for idx, meta := range f.Meta {
+		if meta.Type == flac.VorbisComment {
+			cmt, err := flacvorbis.ParseFromMetaDataBlock(*meta)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			return cmt, &idx, nil
+		}
+	}
+	return nil, nil, nil
 }

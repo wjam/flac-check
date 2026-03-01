@@ -70,7 +70,7 @@ func (s *stringToIntSliceFlag) Set(val string) error {
 	}
 
 	var vals []int
-	for _, v := range strings.Split(parts[1], ",") {
+	for v := range strings.SplitSeq(parts[1], ",") {
 		i, err := strconv.Atoi(v)
 		if err != nil {
 			return err

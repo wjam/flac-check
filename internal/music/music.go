@@ -11,7 +11,7 @@ import (
 	"github.com/wjam/flac-check/internal/lrclib"
 	"github.com/wjam/flac-check/internal/music/track"
 	"github.com/wjam/flac-check/internal/musicbrainz"
-	"github.com/wjam/flac-check/internal/util"
+	"github.com/wjam/flac-check/internal/walk"
 	"github.com/wjam/flac-check/internal/wikidata"
 	"github.com/wjam/flac-check/internal/wikipedia"
 
@@ -88,7 +88,7 @@ func NewScan(path string, opts ScanOptions) *Scan {
 
 func (s *Scan) Run(ctx context.Context) error {
 	group := pool.New().WithErrors().WithMaxGoroutines(int(s.opts.Parallelism)).WithContext(ctx)
-	for e, err := range util.WalkDirIter(s.path) {
+	for e, err := range walk.DirIter(s.path) {
 		if err != nil {
 			group.Go(func(context.Context) error {
 				return err

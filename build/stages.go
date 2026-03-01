@@ -25,5 +25,6 @@ var stageBuild = goyek.Define(goyek.Task{
 	Usage: "build stage",
 	Deps: goyek.Deps{
 		goBuild,
+		whyDeadCode,
 	},
 })

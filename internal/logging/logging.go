@@ -1,11 +1,10 @@
-package log
+package logging
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -17,26 +16,30 @@ func HTTP(req *http.Request, res *http.Response, err error, duration time.Durati
 	if err != nil {
 		attrs = append(attrs, slog.String("error", err.Error()))
 	}
-	Logger(req.Context()).DebugContext(req.Context(), fmt.Sprintf("%s %s", req.Method, req.URL.String()), attrs...)
+	FromContext(req.Context()).DebugContext(req.Context(), fmt.Sprintf("%s %s", req.Method, req.URL.String()), attrs...)
 }
 
-type attrsKey struct{}
-type loggerKey struct{}
+type contextKey int
+
+const (
+	attrsKey  contextKey = iota
+	loggerKey contextKey = iota
+)
 
 func WithAttrs(ctx context.Context, attr ...slog.Attr) context.Context {
 	var existing []slog.Attr
-	if v := ctx.Value(attrsKey{}); v != nil {
+	if v := ctx.Value(attrsKey); v != nil {
 		existing = v.([]slog.Attr)
 	}
-	return context.WithValue(ctx, attrsKey{}, append(existing, attr...))
+	return context.WithValue(ctx, attrsKey, append(existing, attr...))
 }
 
 func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
-	return context.WithValue(ctx, loggerKey{}, logger)
+	return context.WithValue(ctx, loggerKey, logger)
 }
 
-func Logger(ctx context.Context) *slog.Logger {
-	return ctx.Value(loggerKey{}).(*slog.Logger)
+func FromContext(ctx context.Context) *slog.Logger {
+	return ctx.Value(loggerKey).(*slog.Logger)
 }
 
 var _ slog.Handler = WithAttrsFromContextHandler{}
@@ -50,7 +53,7 @@ func (w WithAttrsFromContextHandler) Enabled(ctx context.Context, level slog.Lev
 }
 
 func (w WithAttrsFromContextHandler) Handle(ctx context.Context, record slog.Record) error {
-	if v := ctx.Value(attrsKey{}); v != nil {
+	if v := ctx.Value(attrsKey); v != nil {
 		record.AddAttrs(v.([]slog.Attr)...)
 	}
 
@@ -58,26 +61,9 @@ func (w WithAttrsFromContextHandler) Handle(ctx context.Context, record slog.Rec
 }
 
 func (w WithAttrsFromContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return w.Parent.WithAttrs(attrs)
+	return WithAttrsFromContextHandler{w.Parent.WithAttrs(attrs)}
 }
 
 func (w WithAttrsFromContextHandler) WithGroup(name string) slog.Handler {
-	return w.Parent.WithGroup(name)
-}
-
-func FilterAttributesFromLog(ignored []string) func(groups []string, a slog.Attr) slog.Attr {
-	lookup := make(map[string]struct{}, len(ignored))
-	for _, s := range ignored {
-		lookup[s] = struct{}{}
-	}
-	return func(groups []string, a slog.Attr) slog.Attr {
-		parts := append(groups, a.Key) //nolint:gocritic // two slices are semantically different
-		for i := 1; i <= len(parts); i++ {
-			key := strings.Join(parts[:i], ".")
-			if _, ok := lookup[key]; ok {
-				return slog.Attr{}
-			}
-		}
-		return a
-	}
+	return WithAttrsFromContextHandler{w.Parent.WithGroup(name)}
 }
