@@ -5,9 +5,13 @@ permissions:
 on:
   push: {}
 
+concurrency: # Avoid needlessly continuing the workflow when there's a newer commit
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
@@ -24,3 +28,10 @@ jobs:
 
       - name: Test
         run: go run ./build -v
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3
+        with:
+          advanced-security: 'false'
+          persona: auditor
+          annotations: 'true'
