@@ -5,9 +5,13 @@ permissions:
 on:
   push: {}
 
+concurrency: # Avoid needlessly continuing the workflow when there's a newer commit
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-
+    name: Test
     runs-on: ubuntu-latest
 
     steps:
