@@ -1,6 +1,6 @@
 module github.com/wjam/flac-check
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/carlmjohnson/requests v0.26.1
@@ -13,9 +13,9 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/text v0.41.0
-	golang.org/x/time v0.15.0
-	golang.org/x/tools v0.48.0
+	golang.org/x/text v0.42.0
+	golang.org/x/time v0.16.0
+	golang.org/x/tools v0.49.0
 )
 
 require (
