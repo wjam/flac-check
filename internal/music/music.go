@@ -16,7 +16,7 @@ import (
 	"github.com/wjam/flac-check/internal/wikipedia"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/sourcegraph/conc/pool"
+	"golang.org/x/sync/errgroup"
 )
 
 type ScanOptions struct {
@@ -87,10 +87,12 @@ func NewScan(path string, opts ScanOptions) *Scan {
 }
 
 func (s *Scan) Run(ctx context.Context) error {
-	group := pool.New().WithErrors().WithMaxGoroutines(int(s.opts.Parallelism)).WithContext(ctx)
+	group, ctx := errgroup.WithContext(ctx)
+	group.SetLimit(int(s.opts.Parallelism))
+
 	for e, err := range walk.DirIter(s.path) {
 		if err != nil {
-			group.Go(func(context.Context) error {
+			group.Go(func() error {
 				return err
 			})
 			continue
@@ -102,7 +104,7 @@ func (s *Scan) Run(ctx context.Context) error {
 
 		entries, err := os.ReadDir(e.Path)
 		if err != nil {
-			group.Go(func(context.Context) error {
+			group.Go(func() error {
 				return err
 			})
 			continue
@@ -114,7 +116,7 @@ func (s *Scan) Run(ctx context.Context) error {
 			continue
 		}
 
-		group.Go(func(ctx context.Context) error {
+		group.Go(func() error {
 			err := s.handleAlbum(ctx, e.Path, files)
 			if err == nil {
 				return nil
