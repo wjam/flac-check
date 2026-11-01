@@ -78,7 +78,7 @@ func NewTrack(path string) (*Track, error) {
 		picture:       pic,
 		pictureOffset: pi,
 		tags:          tags,
-		newTags:       map[vorbis.Tag][]string{},
+		newTags:       make(map[vorbis.Tag][]string),
 	}, nil
 }
 
