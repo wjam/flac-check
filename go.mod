@@ -1,6 +1,6 @@
 module github.com/wjam/flac-check
 
-go 1.26.0
+go 1.27.3
 
 require (
 	github.com/carlmjohnson/requests v0.26.2
