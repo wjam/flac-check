@@ -4,4 +4,4 @@ go 1.25.6
 
 tool github.com/aarzilli/whydeadcode
 
-require github.com/aarzilli/whydeadcode v0.0.0-20260220071811-af4c8be0c57f // indirect
+require github.com/aarzilli/whydeadcode v0.0.0-20260303092945-8d908f77de3a // indirect
